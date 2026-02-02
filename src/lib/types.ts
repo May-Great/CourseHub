@@ -50,14 +50,33 @@ export interface Lesson {
   id: string;
   title: string;
   description: string;
-  type: 'video' | 'pdf' | 'audio' | 'text';
+  type: 'video' | 'pdf' | 'audio' | 'text' | 'quiz';
   content: string; // URL for video/audio/pdf, text content for text type
   duration?: number; // in seconds
   materials?: Material[];
   assignment?: Assignment;
+  quiz?: Quiz; // New Quiz Data
   order: number;
   deadline?: string; // ISO date string
   isRequired?: boolean;
+}
+
+export interface Quiz {
+  questions: QuizQuestion[];
+  passingScore: number; // Percentage 0-100
+}
+
+export interface QuizQuestion {
+  id: string;
+  text: string;
+  type: 'single_choice' | 'multiple_choice';
+  options: QuizOption[];
+}
+
+export interface QuizOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
 }
 
 export interface Material {
@@ -111,6 +130,16 @@ export interface Module {
   isRequired?: boolean;
 }
 
+export interface CourseTheme {
+  primaryColor: string;
+  backgroundColor: string;
+  backgroundImage?: string;
+  fontFamily: 'sans' | 'serif' | 'mono';
+  layout: 'default' | 'sidebar-left' | 'centered' | 'immersive';
+  coverStyle: 'banner' | 'overlay' | 'minimal';
+  buttonStyle: 'rounded' | 'pill' | 'sharp';
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -130,6 +159,7 @@ export interface Course {
   status: 'draft' | 'published' | 'archived';
   templateId?: string; // Reference to course template
   settings: CourseSettings;
+  theme?: CourseTheme; // Visual customization
 }
 
 export interface CourseSettings {

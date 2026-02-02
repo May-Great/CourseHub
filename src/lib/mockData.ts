@@ -85,6 +85,14 @@ export const mockCourses: Course[] = [
       certificateEnabled: true,
       discussionEnabled: true
     },
+    theme: {
+      primaryColor: '#3b82f6', // blue-500
+      backgroundColor: '#f8fafc', // slate-50
+      fontFamily: 'sans',
+      layout: 'default',
+      coverStyle: 'banner',
+      buttonStyle: 'rounded'
+    },
     modules: [
       {
         id: 'm1',
@@ -174,6 +182,14 @@ export const mockCourses: Course[] = [
       requireSequentialProgress: false,
       certificateEnabled: true,
       discussionEnabled: true
+    },
+    theme: {
+      primaryColor: '#8b5cf6', // violet-500
+      backgroundColor: '#faf5ff', // purple-50
+      fontFamily: 'sans',
+      layout: 'sidebar-left',
+      coverStyle: 'overlay',
+      buttonStyle: 'pill'
     },
     modules: [
       {

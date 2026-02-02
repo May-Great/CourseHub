@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Course, QuickCreateData, QuickCreateFile, Module, Lesson } from '../types';
+import { Course, QuickCreateData, QuickCreateFile, Module, Lesson, CourseTheme } from '../types';
 import { mockCourses } from '../mockData';
 
 interface CourseState {
@@ -18,6 +18,7 @@ interface CourseState {
   // Actions
   addCourse: (course: Course) => void;
   updateCourse: (id: string, updates: Partial<Course>) => void;
+  updateCourseTheme: (id: string, theme: CourseTheme) => void; // New action
   deleteCourse: (id: string) => void;
   
   // Module Actions
@@ -68,6 +69,12 @@ export const useCourseStore = create<CourseState>()(
       updateCourse: (id, updates) => set((state) => ({
         courses: state.courses.map(course => 
           course.id === id ? { ...course, ...updates, updatedAt: new Date().toISOString() } : course
+        )
+      })),
+
+      updateCourseTheme: (id, theme) => set((state) => ({
+        courses: state.courses.map(course => 
+          course.id === id ? { ...course, theme, updatedAt: new Date().toISOString() } : course
         )
       })),
 
