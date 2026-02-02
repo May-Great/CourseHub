@@ -281,6 +281,8 @@ export interface UserProgress {
   bookmarks: VideoBookmark[];
   streak: number; // days of consecutive activity
   totalTimeSpent: number; // in minutes
+  points: number;
+  lastActivityDate: string;
   achievements: Achievement[];
 }
 

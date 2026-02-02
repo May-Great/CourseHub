@@ -282,6 +282,8 @@ export const mockProgress: UserProgress[] = [
     bookmarks: [],
     streak: 3,
     totalTimeSpent: 125,
+    points: 1250,
+    lastActivityDate: '2024-02-16T10:00:00Z',
     achievements: []
   }
 ];

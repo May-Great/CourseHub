@@ -15,6 +15,7 @@ import { QuizPlayer } from '@/components/quiz/QuizPlayer';
 import { CommentSection } from '@/components/social/CommentSection';
 import { CohortChat } from '@/components/social/CohortChat';
 import { CourseReviews } from '@/components/social/CourseReviews';
+import { Certificate } from '@/components/course/Certificate';
 import { cn } from '@/lib/utils';
 import { Lesson, CourseTheme } from '@/lib/types';
 
@@ -32,7 +33,7 @@ export default function CourseLearnPage() {
   
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'discussion' | 'chat' | 'reviews'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'discussion' | 'chat' | 'reviews' | 'certificate'>('overview');
 
   // Initialize active lesson based on progress or first lesson
   useEffect(() => {
@@ -285,6 +286,16 @@ export default function CourseLearnPage() {
                      
                      {activeTab === 'reviews' && (
                        <CourseReviews courseId={course.id} />
+                     )}
+                     
+                     {activeTab === 'certificate' && user && (
+                       <div className="flex justify-center py-8">
+                         <Certificate 
+                           course={course} 
+                           user={user} 
+                           completionDate={new Date().toISOString()} 
+                         />
+                       </div>
                      )}
                    </div>
                 </div>

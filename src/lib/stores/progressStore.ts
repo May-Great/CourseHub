@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { UserProgress, VideoNote, VideoBookmark } from '../types';
+import { UserProgress, VideoNote, VideoBookmark, Achievement } from '../types';
 
 interface ProgressState {
   userProgress: UserProgress[];
@@ -44,31 +44,101 @@ export const useProgressStore = create<ProgressState>()(
           p => p.userId === userId && p.courseId === courseId
         );
         
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        
         if (progressIndex >= 0) {
           const newProgress = [...state.userProgress];
           const currentProgress = newProgress[progressIndex];
           
           if (!currentProgress.completedLessons.includes(lessonId)) {
+            // Calculate Points
+            let pointsToAdd = 50; // Base points for lesson
+            
+            // Calculate Streak
+            let newStreak = currentProgress.streak;
+            const lastActivity = new Date(currentProgress.lastActivityDate || currentProgress.enrolledAt);
+            const lastActivityDate = lastActivity.toISOString().split('T')[0];
+            
+            const diffTime = Math.abs(now.getTime() - lastActivity.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            if (diffDays === 1) {
+              newStreak += 1;
+              pointsToAdd += 10; // Bonus for streak
+            } else if (diffDays > 1) {
+              newStreak = 1; // Reset streak
+            }
+            // If diffDays === 0 (same day), keep streak
+            
+            // Check Achievements
+            const newAchievements: Achievement[] = [...currentProgress.achievements];
+            
+            // 1. First Lesson Badge
+            if (currentProgress.completedLessons.length === 0 && !newAchievements.some(a => a.id === 'first_lesson')) {
+               newAchievements.push({
+                 id: 'first_lesson',
+                 type: 'lesson_completed',
+                 title: 'Первый шаг',
+                 description: 'Вы прошли свой первый урок!',
+                 icon: 'Award',
+                 earnedAt: now.toISOString(),
+                 points: 100
+               });
+               pointsToAdd += 100;
+            }
+            
+            // 2. Streak Badges (3 days)
+            if (newStreak === 3 && !newAchievements.some(a => a.id === 'streak_3')) {
+               newAchievements.push({
+                 id: 'streak_3',
+                 type: 'streak',
+                 title: 'На волне',
+                 description: '3 дня подряд обучения',
+                 icon: 'Zap',
+                 earnedAt: now.toISOString(),
+                 points: 150
+               });
+               pointsToAdd += 150;
+            }
+
             newProgress[progressIndex] = {
               ...currentProgress,
               completedLessons: [...currentProgress.completedLessons, lessonId],
+              points: (currentProgress.points || 0) + pointsToAdd,
+              streak: newStreak,
+              lastActivityDate: now.toISOString(),
+              achievements: newAchievements
             };
           }
           
           return { userProgress: newProgress };
         } else {
           // Create new progress entry
+          // First lesson completion for a new course
           const newProgressEntry: UserProgress = {
             userId,
             courseId,
             completedLessons: [lessonId],
             completedAssignments: [],
-            enrolledAt: new Date().toISOString(),
+            enrolledAt: now.toISOString(),
             notes: [],
             bookmarks: [],
             streak: 1,
             totalTimeSpent: 0,
-            achievements: [],
+            points: 150, // 50 lesson + 100 first lesson bonus
+            lastActivityDate: now.toISOString(),
+            achievements: [
+              {
+                 id: 'first_lesson',
+                 type: 'lesson_completed',
+                 title: 'Первый шаг',
+                 description: 'Вы прошли свой первый урок!',
+                 icon: 'Award',
+                 earnedAt: now.toISOString(),
+                 points: 100
+               }
+            ],
           };
           
           return { userProgress: [...state.userProgress, newProgressEntry] };
@@ -110,6 +180,8 @@ export const useProgressStore = create<ProgressState>()(
             bookmarks: [],
             streak: 0,
             totalTimeSpent: 0,
+            points: 0,
+            lastActivityDate: new Date().toISOString(),
             achievements: [],
           };
           
@@ -192,6 +264,8 @@ export const useProgressStore = create<ProgressState>()(
             bookmarks: [newBookmark],
             streak: 0,
             totalTimeSpent: 0,
+            points: 0,
+            lastActivityDate: new Date().toISOString(),
             achievements: [],
           };
           

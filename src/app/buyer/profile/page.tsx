@@ -2,14 +2,18 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { useAppStore, useStudentStore, useMiniLessonStore } from '@/lib/stores';
+import { useAppStore, useStudentStore, useMiniLessonStore, useProgressStore } from '@/lib/stores';
 import { strings } from '@/lib/strings.ru';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { BookOpen, CheckCircle, Clock, History, PlayCircle, Bookmark } from 'lucide-react';
+import { GamificationStats } from '@/components/gamification/GamificationStats';
 import Link from 'next/link';
 
 export default function BuyerProfile() {
-  const { purchasedCourses, userProgress } = useAppStore();
+  const { purchasedCourses } = useAppStore();
+  // Rename legacy userProgress to avoid conflict
+  const { userProgress: legacyProgress } = useAppStore();
+  const { userProgress } = useProgressStore();
   const { watchedMiniLessons, savedCourses, savedMiniLessons } = useStudentStore();
   const { miniLessons, initialize: initLessons } = useMiniLessonStore();
   
@@ -18,6 +22,12 @@ export default function BuyerProfile() {
   }, [initLessons]);
   
   const totalCourses = purchasedCourses.length;
+  
+  // Calculate stats from new store
+  const totalPoints = userProgress.reduce((acc, p) => acc + (p.points || 0), 0);
+  const maxStreak = userProgress.reduce((acc, p) => Math.max(acc, p.streak || 0), 0);
+  const totalAchievements = userProgress.reduce((acc, p) => acc + (p.achievements?.length || 0), 0);
+
   const completedCourses = userProgress.filter(p => {
     return p.completedLessons.length > 0; // Simplified for demo
   }).length;
@@ -42,6 +52,13 @@ export default function BuyerProfile() {
           Управляйте настройками профиля и отслеживайте прогресс
         </p>
       </div>
+      
+      {/* Gamification Stats */}
+      <GamificationStats 
+        points={totalPoints} 
+        streak={maxStreak} 
+        achievementsCount={totalAchievements} 
+      />
       
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
