@@ -9,12 +9,14 @@ interface CohortChatProps {
   courseId: string;
   cohortId?: string; // Optional, defaults to "default-cohort-{courseId}"
   height?: string;
+  className?: string;
 }
 
 export const CohortChat: React.FC<CohortChatProps> = ({ 
   courseId, 
   cohortId, 
-  height = '600px' 
+  height,
+  className
 }) => {
   const { currentUser: user } = useAuthStore();
   const { chatMessages, addChatMessage, getCohortMessages, getCourseMessages } = useChatStore();
@@ -68,7 +70,10 @@ export const CohortChat: React.FC<CohortChatProps> = ({
   };
 
   return (
-    <div className="flex flex-col bg-white rounded-xl shadow-sm border border-slate-200" style={{ height }}>
+    <div 
+      className={cn("flex flex-col bg-white rounded-xl shadow-sm border border-slate-200", className)} 
+      style={{ height: height || '600px' }}
+    >
       {/* Header */}
       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
         <div>

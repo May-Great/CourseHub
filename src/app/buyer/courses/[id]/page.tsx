@@ -6,6 +6,8 @@ import { useCourseStore } from '@/lib/stores/courseStore';
 import { useProgressStore } from '@/lib/stores/progressStore';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useSocialStore } from '@/lib/stores/socialStore';
+import { useAppStore } from '@/lib/stores'; // Using legacy for purchasedCourses
+import { EnrollButton } from '@/components/course/EnrollButton';
 import { 
   PlayCircle, CheckCircle, Lock, Menu, ChevronLeft, ChevronRight, 
   FileText, Clock, Award, MessageSquare, Star, Users 
@@ -27,9 +29,13 @@ export default function CourseLearnPage() {
   const { courses } = useCourseStore();
   const { userProgress, completeLesson, getUserProgress } = useProgressStore();
   const { currentUser: user } = useAuthStore();
+  const { purchasedCourses } = useAppStore();
   
   const course = courses.find(c => c.id === courseId);
   const userCourseProgress = user ? getUserProgress(user.id, courseId) : undefined;
+  
+  const isPurchased = course && purchasedCourses.includes(course.id);
+  const isLocked = course && course.price > 0 && !isPurchased;
   
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -145,6 +151,21 @@ export default function CourseLearnPage() {
 
                 {/* Content Player */}
                 <div className="bg-slate-900 aspect-video relative">
+                  {isLocked ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur-sm z-10 text-white p-6 text-center">
+                      <Lock className="w-16 h-16 text-slate-500 mb-4" />
+                      <h3 className="text-2xl font-bold mb-2">Доступ закрыт</h3>
+                      <p className="text-slate-400 mb-6 max-w-md">
+                        Этот урок доступен только после покупки курса. Приобретите полный доступ, чтобы продолжить обучение.
+                      </p>
+                      <EnrollButton 
+                        course={course} 
+                        size="lg" 
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white border-none"
+                      />
+                    </div>
+                  ) : null}
+                  
                   {activeLesson.type === 'video' ? (
                      <VideoPlayer 
                        src={activeLesson.content} 
@@ -281,7 +302,11 @@ export default function CourseLearnPage() {
                      )}
                      
                      {activeTab === 'chat' && (
-                       <CohortChat courseId={course.id} />
+                       <CohortChat 
+                         courseId={course.id} 
+                         className="h-[calc(100vh-350px)] min-h-[500px]" 
+                         height="auto" 
+                       />
                      )}
                      
                      {activeTab === 'reviews' && (

@@ -24,7 +24,7 @@ export const Certificate: React.FC<CertificateProps> = ({ course, user, completi
   };
 
   return (
-    <div className="flex flex-col items-center space-y-6">
+    <div className="flex flex-col items-center space-y-6 w-full">
       <div className="flex gap-4">
         <button 
           onClick={handlePrint}
@@ -39,14 +39,15 @@ export const Certificate: React.FC<CertificateProps> = ({ course, user, completi
         </button>
       </div>
 
-      <div 
-        ref={certificateRef}
-        className="w-full max-w-4xl aspect-[1.414/1] bg-white relative p-12 shadow-lg border-8 border-double border-slate-200 text-center flex flex-col items-center justify-between"
-        style={{ fontFamily: 'serif' }}
-      >
-        {/* Border Decoration */}
-        <div className="absolute inset-4 border-2 border-slate-900 pointer-events-none" />
-        <div className="absolute inset-6 border border-slate-400 pointer-events-none" />
+      <div className="w-full overflow-x-auto pb-8">
+        <div 
+          ref={certificateRef}
+          className="min-w-[800px] w-full max-w-4xl aspect-[1.414/1] bg-white relative p-12 shadow-lg border-8 border-double border-slate-200 text-center flex flex-col items-center justify-between mx-auto"
+          style={{ fontFamily: 'serif' }}
+        >
+          {/* Border Decoration */}
+          <div className="absolute inset-4 border-2 border-slate-900 pointer-events-none" />
+          <div className="absolute inset-6 border border-slate-400 pointer-events-none" />
 
         {/* Header */}
         <div className="mt-8 space-y-4 relative z-10">
@@ -95,6 +96,7 @@ export const Certificate: React.FC<CertificateProps> = ({ course, user, completi
             <p className="text-lg font-medium font-sans">{course.authorName}</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { Topbar } from '@/components/layout/Topbar';
+import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { strings } from '@/lib/strings.ru';
 
 export default function BuyerLayout({
@@ -43,6 +44,7 @@ export default function BuyerLayout({
       <main className="animate-fade-in">
         {children}
       </main>
+      <CheckoutModal />
     </div>
   );
 }

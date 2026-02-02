@@ -10,6 +10,7 @@ export { useSubscriptionStore } from './subscriptionStore';
 export { useMiniLessonStore } from './miniLessonStore';
 export { useAuthorProfileStore } from './authorProfileStore';
 export { useStudentStore } from './studentStore';
+export { useCartStore } from './cartStore';
 
 // Legacy export for backward compatibility
 export { useAppStore } from '../store';

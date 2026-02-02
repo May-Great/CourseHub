@@ -12,7 +12,7 @@ export const GamificationStats: React.FC<GamificationStatsProps> = ({ points, st
   const progressToNextLevel = (points % 1000) / 10; // 0-100
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
         <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
           <Trophy className="w-6 h-6" />

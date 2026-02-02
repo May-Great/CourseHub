@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { strings } from '@/lib/strings.ru';
 import { User, Star, Clock, BookOpen, Bookmark, BookmarkCheck } from 'lucide-react';
 import { useStudentStore } from '@/lib/stores/studentStore';
+import { EnrollButton } from '@/components/course/EnrollButton';
 import { cn } from '@/lib/utils';
 
 interface CourseCardProps {
@@ -15,6 +16,7 @@ interface CourseCardProps {
   progress?: number;
   onBuy?: (courseId: string) => void;
   hideAuthor?: boolean;
+  userRole?: 'author' | 'buyer';
 }
 
 export function CourseCard({ 
@@ -23,7 +25,8 @@ export function CourseCard({
   showProgress = false,
   progress = 0,
   onBuy,
-  hideAuthor = false
+  hideAuthor = false,
+  userRole = 'buyer'
 }: CourseCardProps) {
   const { isCourseSaved, toggleSaveCourse } = useStudentStore();
   const isSaved = isCourseSaved(course.id);
@@ -135,16 +138,31 @@ export function CourseCard({
         
         {/* Actions - Visible on Hover */}
         <div className="mt-4 pt-0 h-0 opacity-0 overflow-hidden group-hover:h-auto group-hover:opacity-100 group-hover:pt-2 transition-all duration-300">
-          <Link 
-            href={showBuyButton ? `/buyer/courses/${course.id}` : `/author/courses/${course.id}`}
-            className="block"
-          >
-            <Button 
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 border-none"
+          {userRole === 'author' ? (
+            <Link 
+              href={`/author/courses/${course.id}`}
+              className="block"
             >
-              {showBuyButton ? 'View Details' : 'Edit Course'}
-            </Button>
-          </Link>
+              <Button 
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 border-none"
+              >
+                Edit Course
+              </Button>
+            </Link>
+          ) : showBuyButton ? (
+            <EnrollButton course={course} className="w-full" />
+          ) : (
+            <Link 
+              href={`/buyer/courses/${course.id}`}
+              className="block"
+            >
+              <Button 
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 border-none"
+              >
+                View Details
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>
