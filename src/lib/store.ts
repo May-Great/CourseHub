@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Course, UserProgress, ChatMessage } from './mockData';
-import { MiniLesson } from './types';
+import { User, Course, UserProgress, ChatMessage, MiniLesson } from './types';
 
 interface AppState {
   // User & Role

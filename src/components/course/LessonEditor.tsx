@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Lesson, Material, Quiz, QuizQuestion, QuizOption } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { aiService } from '@/lib/aiService';
 import { 
   Video, 
   FileText, 
@@ -14,7 +15,9 @@ import {
   File,
   HelpCircle,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +29,9 @@ interface LessonEditorProps {
 
 export function LessonEditor({ lesson, onUpdate, onClose }: LessonEditorProps) {
   const [localLesson, setLocalLesson] = useState<Lesson>(lesson);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showAiInput, setShowAiInput] = useState(false);
+  const [sourceText, setSourceText] = useState('');
 
   // Sync local state when prop changes (e.g. switching lessons)
   useEffect(() => {
@@ -46,6 +52,32 @@ export function LessonEditor({ lesson, onUpdate, onClose }: LessonEditorProps) {
 
   const handleSave = () => {
     onUpdate(localLesson);
+  };
+
+  // --- AI Handlers ---
+  const handleAiGenerate = async () => {
+    if (!sourceText.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      const questions = await aiService.generateQuizFromText(sourceText);
+      
+      // Append to existing quiz
+      const currentQuiz = localLesson.quiz || { questions: [], passingScore: 70 };
+      const updatedQuiz = {
+        ...currentQuiz,
+        questions: [...currentQuiz.questions, ...questions]
+      };
+      
+      handleChange('quiz', updatedQuiz);
+      setShowAiInput(false);
+      setSourceText('');
+    } catch (error) {
+      console.error("AI Generation failed", error);
+      // Ideally show error toast
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // --- Material Handlers ---
@@ -309,6 +341,52 @@ export function LessonEditor({ lesson, onUpdate, onClose }: LessonEditorProps) {
                  </div>
                </CardHeader>
                <CardContent className="space-y-6">
+                 {/* AI Generator Button */}
+                 {!showAiInput ? (
+                    <Button 
+                      onClick={() => setShowAiInput(true)}
+                      className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0 shadow-md"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Сгенерировать вопросы с AI
+                    </Button>
+                 ) : (
+                    <div className="bg-violet-50 rounded-xl p-4 border border-violet-100 animate-in fade-in slide-in-from-top-2">
+                      <div className="flex justify-between items-center mb-2">
+                         <h4 className="text-sm font-bold text-violet-800 flex items-center">
+                           <Sparkles className="w-4 h-4 mr-2" /> AI Генератор
+                         </h4>
+                         <button onClick={() => setShowAiInput(false)} className="text-violet-400 hover:text-violet-600">
+                           <X className="w-4 h-4" />
+                         </button>
+                      </div>
+                      <p className="text-xs text-violet-600 mb-3">
+                        Вставьте текст урока, и AI автоматически создаст проверочные вопросы.
+                      </p>
+                      <textarea
+                        value={sourceText}
+                        onChange={(e) => setSourceText(e.target.value)}
+                        placeholder="Вставьте текст урока здесь..."
+                        rows={4}
+                        className="w-full p-3 text-sm border-violet-200 rounded-lg focus:ring-violet-500 mb-3"
+                      />
+                      <Button 
+                        onClick={handleAiGenerate} 
+                        disabled={isGenerating || !sourceText.trim()}
+                        className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Генерирую...
+                          </>
+                        ) : (
+                          'Создать вопросы'
+                        )}
+                      </Button>
+                    </div>
+                 )}
+
                  {localLesson.quiz.questions.map((question, qIndex) => (
                    <div key={question.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 relative group">
                      <button 

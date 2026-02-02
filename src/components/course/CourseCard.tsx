@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Course } from '@/lib/mockData';
+import { Course } from '@/lib/types';
 import { formatPrice } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { strings } from '@/lib/strings.ru';

@@ -25,6 +25,7 @@ export default function AuthorMessages() {
       message: newMessage,
       timestamp: new Date().toISOString(),
       cohortId: selectedCohortId,
+      type: 'message' as const,
     };
     
     addChatMessage(message);

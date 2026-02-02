@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, ProgressBar, Badge } from '@/components/ui';
 import { useSubscriptionStore } from '@/lib/stores/subscriptionStore';
-import { useCourseStore, useCohortStore } from '@/lib/stores';
+import { useCourseStore, useCohortStore, useMiniLessonStore } from '@/lib/stores';
 
 export function UsageStats() {
   const { 
@@ -15,6 +15,7 @@ export function UsageStats() {
   
   const { courses } = useCourseStore();
   const { cohorts } = useCohortStore();
+  const { miniLessons } = useMiniLessonStore();
   
   const currentPlan = getCurrentPlan();
   const remainingLimits = getRemainingLimits();
@@ -27,13 +28,14 @@ export function UsageStats() {
       userId: 'current-user',
       coursesCreated: courses.length,
       cohortsCreated: cohorts.length,
+      miniLessonsCreated: miniLessons.length,
       totalStudents,
       storageUsed: courses.length * 0.5, // Mock: 0.5GB per course
       lastUpdated: new Date().toISOString(),
     };
     
     updateUsageStats(stats);
-  }, [courses.length, cohorts.length, updateUsageStats]);
+  }, [courses.length, cohorts.length, miniLessons.length, updateUsageStats]);
   
   if (!currentPlan || !usageStats) {
     return null;

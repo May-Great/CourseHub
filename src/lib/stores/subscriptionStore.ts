@@ -46,6 +46,7 @@ const defaultPlans: PricingPlan[] = [
     ],
     limits: {
       courses: 1,
+      miniLessons: 10,
       cohorts: 1,
       studentsPerCohort: 10,
       totalStudents: 10,
@@ -74,6 +75,7 @@ const defaultPlans: PricingPlan[] = [
     ],
     limits: {
       courses: -1,
+      miniLessons: -1,
       cohorts: 5,
       studentsPerCohort: 100,
       totalStudents: 500,
@@ -102,6 +104,7 @@ const defaultPlans: PricingPlan[] = [
     ],
     limits: {
       courses: -1,
+      miniLessons: -1,
       cohorts: -1,
       studentsPerCohort: 1000,
       totalStudents: -1,

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, ProgressBar } from '@/components/ui';
 import { useSubscriptionStore } from '@/lib/stores/subscriptionStore';
-import { useCourseStore, useCohortStore } from '@/lib/stores';
+import { useCourseStore, useCohortStore, useMiniLessonStore } from '@/lib/stores';
 
 export function PlanLimitsWidget() {
   const { 
@@ -17,6 +17,7 @@ export function PlanLimitsWidget() {
   
   const { courses, initialize } = useCourseStore();
   const { cohorts } = useCohortStore();
+  const { miniLessons } = useMiniLessonStore();
   
   const currentPlan = getCurrentPlan();
   const remainingLimits = getRemainingLimits();
@@ -41,13 +42,14 @@ export function PlanLimitsWidget() {
       userId: 'current-user',
       coursesCreated: courses.length,
       cohortsCreated: cohorts.length,
+      miniLessonsCreated: miniLessons.length,
       totalStudents,
       storageUsed: courses.length * 0.5, // Mock: 0.5GB per course
       lastUpdated: new Date().toISOString(),
     };
     
     updateUsageStats(stats);
-  }, [courses.length, cohorts.length, updateUsageStats]);
+  }, [courses.length, cohorts.length, miniLessons.length, updateUsageStats]);
   
   if (!currentPlan || !usageStats) {
     return null;

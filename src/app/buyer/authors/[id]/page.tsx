@@ -62,7 +62,7 @@ export default function BuyerAuthorProfile() {
   }
   
   const handleFollowClick = () => {
-    toggleFollow(authorId, !isFollowing);
+    toggleFollow(authorId);
     setIsFollowing(!isFollowing);
   };
   

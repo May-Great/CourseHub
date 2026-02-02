@@ -439,3 +439,26 @@ export interface ProductFeedback {
   submittedAt: string;
   status: 'new' | 'reviewed' | 'in_progress' | 'completed';
 }
+
+// Social Features
+export interface Comment {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  lessonId: string;
+  content: string;
+  createdAt: string;
+  replies?: Comment[];
+}
+
+export interface Review {
+  id: string;
+  courseId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number; // 1-5
+  content: string;
+  createdAt: string;
+}
