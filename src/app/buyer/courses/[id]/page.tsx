@@ -6,7 +6,8 @@ import { useCourseStore } from '@/lib/stores/courseStore';
 import { useProgressStore } from '@/lib/stores/progressStore';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useSocialStore } from '@/lib/stores/socialStore';
-import { useAppStore } from '@/lib/stores'; // Using legacy for purchasedCourses
+import { useStudentStore } from '@/lib/stores/studentStore';
+import { useAppStore } from '@/lib/stores'; // Keeping for other legacy props if any
 import { EnrollButton } from '@/components/course/EnrollButton';
 import { 
   PlayCircle, CheckCircle, Lock, Menu, ChevronLeft, ChevronRight, 
@@ -29,7 +30,7 @@ export default function CourseLearnPage() {
   const { courses } = useCourseStore();
   const { userProgress, completeLesson, getUserProgress } = useProgressStore();
   const { currentUser: user } = useAuthStore();
-  const { purchasedCourses } = useAppStore();
+  const { purchasedCourses } = useStudentStore();
   
   const course = courses.find(c => c.id === courseId);
   const userCourseProgress = user ? getUserProgress(user.id, courseId) : undefined;
@@ -50,7 +51,8 @@ export default function CourseLearnPage() {
         setActiveLesson(course.modules[0].lessons[0]);
       }
     }
-  }, [course, activeLesson]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course]);
 
   if (!course) {
     return <div className="p-8 text-center">Курс не найден</div>;
@@ -73,44 +75,63 @@ export default function CourseLearnPage() {
 
   // Apply theme styles
   const theme = course.theme;
+  
+  // Font Family
+  const fontFamilyClass = theme?.fontFamily === 'serif' ? 'font-serif' : 
+                         theme?.fontFamily === 'mono' ? 'font-mono' : 
+                         'font-sans';
+
+  // Button Radius
+  const buttonRadiusClass = theme?.buttonStyle === 'pill' ? 'rounded-full' :
+                           theme?.buttonStyle === 'sharp' ? 'rounded-none' :
+                           'rounded-lg';
+
   const themeStyles = theme ? {
     '--primary': theme.primaryColor,
     '--bg-color': theme.backgroundColor,
-    '--font-family': theme.fontFamily === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' : 
-                     theme.fontFamily === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' : 
-                     'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   } as React.CSSProperties : {};
 
-  // Custom class for primary color text/bg based on theme (simplified approach)
-  // Real implementation would parse hex to RGB for tailwind opacity utilities or use inline styles more extensively
-  
+  // Layout logic
+  const isSidebarLeft = theme?.layout === 'sidebar-left';
+  const isCentered = theme?.layout === 'centered';
+  const isImmersive = theme?.layout === 'immersive';
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-[family-name:var(--font-family)]" style={themeStyles}>
+    <div className={cn("min-h-screen flex flex-col transition-colors duration-300", fontFamilyClass)} 
+         style={{ ...themeStyles, backgroundColor: theme?.backgroundColor || '#f8fafc' }}>
       {/* Top Navigation */}
-      <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 z-20 sticky top-0 shadow-sm">
+      <header className={cn(
+        "border-b h-16 flex items-center justify-between px-4 z-20 sticky top-0 shadow-sm transition-colors duration-300",
+        isImmersive ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-200"
+      )}>
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push('/buyer/dashboard')}
-            className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+            className={cn(
+              "p-2 rounded-full transition-colors",
+              isImmersive ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-100 text-slate-500"
+            )}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
              {/* Use theme primary color if available, else default indigo */}
             <div 
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold"
+              className={cn("w-8 h-8 flex items-center justify-center text-white font-bold", buttonRadiusClass)}
               style={{ backgroundColor: theme?.primaryColor || '#4f46e5' }}
             >
               {course.title.charAt(0)}
             </div>
-            <h1 className="font-semibold text-slate-900 hidden md:block">{course.title}</h1>
+            <h1 className={cn("font-semibold hidden md:block", isImmersive ? "text-white" : "text-slate-900")}>
+              {course.title}
+            </h1>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="hidden md:flex flex-col items-end mr-4">
-            <div className="text-xs text-slate-500 mb-1">Прогресс курса</div>
-            <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div className={cn("text-xs mb-1", isImmersive ? "text-slate-400" : "text-slate-500")}>Прогресс курса</div>
+            <div className={cn("w-32 h-2 rounded-full overflow-hidden", isImmersive ? "bg-slate-800" : "bg-slate-100")}>
               <div 
                 className="h-full rounded-full transition-all duration-500"
                 style={{ 
@@ -122,31 +143,43 @@ export default function CourseLearnPage() {
           </div>
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 lg:hidden"
+            className={cn(
+              "p-2 rounded-lg lg:hidden",
+              isImmersive ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-100 text-slate-600"
+            )}
           >
             <Menu className="w-5 h-5" />
           </button>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className={cn("flex flex-1 overflow-hidden relative", isSidebarLeft && "flex-row-reverse")}>
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth">
-          <div className="max-w-4xl mx-auto space-y-6">
+        <main className={cn(
+          "flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth",
+          isCentered && "flex justify-center"
+        )}>
+          <div className={cn("w-full space-y-6", isCentered ? "max-w-3xl" : "max-w-4xl mx-auto")}>
             
             {/* Lesson Content Viewer */}
             {activeLesson ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className={cn(
+                "overflow-hidden transition-all duration-300",
+                isImmersive ? "bg-slate-900 border-slate-800 shadow-xl" : "bg-white border border-slate-200 shadow-sm",
+                buttonRadiusClass === 'rounded-none' ? 'rounded-none' : 'rounded-2xl'
+              )}>
                 {/* Lesson Header */}
-                <div className="p-6 border-b border-slate-100">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-                    <span className="font-medium text-slate-900">
+                <div className={cn("p-6 border-b", isImmersive ? "border-slate-800" : "border-slate-100")}>
+                  <div className={cn("flex items-center gap-2 text-sm mb-2", isImmersive ? "text-slate-400" : "text-slate-500")}>
+                    <span className={cn("font-medium", isImmersive ? "text-slate-200" : "text-slate-900")}>
                       Модуль {course.modules.findIndex(m => m.lessons.some(l => l.id === activeLesson.id)) + 1}
                     </span>
                     <span>•</span>
                     <span>Урок {activeLesson.order}</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900">{activeLesson.title}</h2>
+                  <h2 className={cn("text-2xl font-bold", isImmersive ? "text-white" : "text-slate-900")}>
+                    {activeLesson.title}
+                  </h2>
                 </div>
 
                 {/* Content Player */}
@@ -161,7 +194,7 @@ export default function CourseLearnPage() {
                       <EnrollButton 
                         course={course} 
                         size="lg" 
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white border-none"
+                        className={cn("bg-indigo-600 hover:bg-indigo-700 text-white border-none", buttonRadiusClass)}
                       />
                     </div>
                   ) : null}
@@ -175,7 +208,7 @@ export default function CourseLearnPage() {
                        onLessonComplete={handleLessonComplete}
                      />
                   ) : activeLesson.type === 'quiz' && activeLesson.quiz ? (
-                     <div className="h-full w-full bg-slate-50 overflow-y-auto p-6">
+                     <div className={cn("h-full w-full overflow-y-auto p-6", isImmersive ? "bg-slate-800" : "bg-slate-50")}>
                        <QuizPlayer 
                          quiz={activeLesson.quiz}
                          onComplete={(score) => {
@@ -193,8 +226,8 @@ export default function CourseLearnPage() {
                         <p className="text-sm opacity-70 mt-2">Контент: {activeLesson.content}</p>
                         <button 
                           onClick={handleLessonComplete}
-                          className="mt-6 px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
-                          style={{ backgroundColor: theme?.primaryColor }}
+                          className={cn("mt-6 px-6 py-2 text-white transition-colors", buttonRadiusClass)}
+                          style={{ backgroundColor: theme?.primaryColor || '#4f46e5' }}
                         >
                           Отметить как пройденный
                         </button>
@@ -204,85 +237,72 @@ export default function CourseLearnPage() {
                 </div>
 
                 {/* Lesson Description & Actions */}
-                <div className="p-6">
-                   <div className="prose max-w-none text-slate-600 mb-8">
+                <div className={cn("p-6", isImmersive ? "bg-slate-900 text-slate-300" : "bg-white")}>
+                   <div className={cn("prose max-w-none mb-8", isImmersive ? "prose-invert" : "text-slate-600")}>
                      {activeLesson.description}
                    </div>
 
                    {/* Tabs for extra content */}
-                   <div className="border-b border-slate-200 mb-6">
+                   <div className={cn("border-b mb-6", isImmersive ? "border-slate-800" : "border-slate-200")}>
                      <nav className="flex gap-6">
-                       <button 
-                         onClick={() => setActiveTab('overview')}
-                         className={cn(
-                           "pb-3 text-sm font-medium border-b-2 transition-colors",
-                           activeTab === 'overview' 
-                             ? "border-indigo-600 text-indigo-600" 
-                             : "border-transparent text-slate-500 hover:text-slate-700"
-                         )}
-                         style={activeTab === 'overview' ? { borderColor: theme?.primaryColor, color: theme?.primaryColor } : {}}
-                       >
-                         Обзор
-                       </button>
-                       <button 
-                         onClick={() => setActiveTab('discussion')}
-                         className={cn(
-                           "pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2",
-                           activeTab === 'discussion'
-                             ? "border-indigo-600 text-indigo-600" 
-                             : "border-transparent text-slate-500 hover:text-slate-700"
-                         )}
-                         style={activeTab === 'discussion' ? { borderColor: theme?.primaryColor, color: theme?.primaryColor } : {}}
-                       >
-                         <MessageSquare className="w-4 h-4" />
-                         Обсуждение
-                       </button>
-                       <button 
-                         onClick={() => setActiveTab('chat')}
-                         className={cn(
-                           "pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2",
-                           activeTab === 'chat'
-                             ? "border-indigo-600 text-indigo-600" 
-                             : "border-transparent text-slate-500 hover:text-slate-700"
-                         )}
-                         style={activeTab === 'chat' ? { borderColor: theme?.primaryColor, color: theme?.primaryColor } : {}}
-                       >
-                         <Users className="w-4 h-4" />
-                         Чат потока
-                       </button>
-                       <button 
-                         onClick={() => setActiveTab('reviews')}
-                         className={cn(
-                           "pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2",
-                           activeTab === 'reviews'
-                             ? "border-indigo-600 text-indigo-600" 
-                             : "border-transparent text-slate-500 hover:text-slate-700"
-                         )}
-                         style={activeTab === 'reviews' ? { borderColor: theme?.primaryColor, color: theme?.primaryColor } : {}}
-                       >
-                         <Star className="w-4 h-4" />
-                         Отзывы
-                       </button>
+                       {[
+                         { id: 'overview', label: 'Обзор', icon: null },
+                         { id: 'discussion', label: 'Обсуждение', icon: MessageSquare },
+                         { id: 'chat', label: 'Чат потока', icon: Users },
+                         { id: 'reviews', label: 'Отзывы', icon: Star },
+                       ].map((tab) => (
+                         <button 
+                           key={tab.id}
+                           onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                           className={cn(
+                             "pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2",
+                             activeTab === tab.id
+                               ? "" // Active color handled by style
+                               : isImmersive ? "border-transparent text-slate-500 hover:text-slate-300" : "border-transparent text-slate-500 hover:text-slate-700"
+                           )}
+                           style={activeTab === tab.id ? { borderColor: theme?.primaryColor || '#4f46e5', color: theme?.primaryColor || '#4f46e5' } : {}}
+                         >
+                           {tab.icon && <tab.icon className="w-4 h-4" />}
+                           {tab.label}
+                         </button>
+                       ))}
                      </nav>
                    </div>
 
                    {/* Tab Content */}
                    <div>
                      {activeTab === 'overview' && (
-                       <div className="space-y-4">
-                         <h3 className="font-semibold text-slate-900">Материалы урока</h3>
+                       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                         <h3 className={cn("font-semibold", isImmersive ? "text-white" : "text-slate-900")}>Материалы урока</h3>
                          {activeLesson.materials && activeLesson.materials.length > 0 ? (
                            <ul className="space-y-2">
                              {activeLesson.materials.map((material, idx) => (
-                               <li key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-slate-200 transition-colors cursor-pointer group">
-                                 <div className="p-2 bg-white rounded-md shadow-sm text-slate-500 group-hover:text-indigo-600 transition-colors">
+                               <li key={idx} className={cn(
+                                 "flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer group",
+                                 isImmersive 
+                                   ? "bg-slate-800 border-slate-700 hover:border-slate-600" 
+                                   : "bg-slate-50 border-slate-100 hover:border-slate-200"
+                               )}>
+                                 <div className={cn(
+                                   "p-2 rounded-md shadow-sm transition-colors",
+                                   isImmersive ? "bg-slate-700 text-slate-400 group-hover:text-white" : "bg-white text-slate-500 group-hover:text-indigo-600"
+                                 )}>
                                    <FileText className="w-5 h-5" />
                                  </div>
                                  <div className="flex-1">
-                                   <div className="font-medium text-slate-900">{material.title}</div>
+                                   <div className={cn("font-medium", isImmersive ? "text-slate-200" : "text-slate-900")}>{material.title}</div>
                                    <div className="text-xs text-slate-500 uppercase">{material.type}</div>
                                  </div>
-                                 <a href={material.url || '#'} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-600 hover:text-indigo-700 px-3 py-1 bg-indigo-50 rounded-md">
+                                 <a 
+                                   href={material.url || '#'} 
+                                   target="_blank" 
+                                   rel="noopener noreferrer" 
+                                   className={cn("text-sm font-medium px-3 py-1 rounded-md transition-colors", buttonRadiusClass)}
+                                   style={{ 
+                                     backgroundColor: isImmersive ? 'rgba(255,255,255,0.1)' : `${theme?.primaryColor || '#4f46e5'}10`,
+                                     color: theme?.primaryColor || '#4f46e5'
+                                   }}
+                                 >
                                    Скачать
                                  </a>
                                </li>
@@ -295,26 +315,32 @@ export default function CourseLearnPage() {
                      )}
 
                      {activeTab === 'discussion' && (
-                       <CommentSection 
-                         lessonId={activeLesson.id} 
-                         currentUser={user || { id: 'guest', name: 'Guest' }}
-                       />
+                       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                         <CommentSection 
+                           lessonId={activeLesson.id} 
+                           currentUser={user || { id: 'guest', name: 'Guest' }}
+                         />
+                       </div>
                      )}
                      
                      {activeTab === 'chat' && (
-                       <CohortChat 
-                         courseId={course.id} 
-                         className="h-[calc(100vh-350px)] min-h-[500px]" 
-                         height="auto" 
-                       />
+                       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                         <CohortChat 
+                           courseId={course.id} 
+                           className="h-[calc(100vh-350px)] min-h-[500px]" 
+                           height="auto" 
+                         />
+                       </div>
                      )}
                      
                      {activeTab === 'reviews' && (
-                       <CourseReviews courseId={course.id} />
+                       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                         <CourseReviews courseId={course.id} />
+                       </div>
                      )}
                      
                      {activeTab === 'certificate' && user && (
-                       <div className="flex justify-center py-8">
+                       <div className="flex justify-center py-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                          <Certificate 
                            course={course} 
                            user={user} 
@@ -339,15 +365,16 @@ export default function CourseLearnPage() {
 
         {/* Sidebar Navigation */}
         <aside className={cn(
-          "w-80 bg-white border-l border-slate-200 flex-shrink-0 flex flex-col transition-all duration-300 absolute inset-y-0 right-0 lg:static lg:transform-none z-10",
+          "w-80 border-l flex-shrink-0 flex flex-col transition-all duration-300 absolute inset-y-0 right-0 lg:static lg:transform-none z-10",
+          isImmersive ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200",
           isSidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0 lg:w-80",
           !isSidebarOpen && "lg:w-0 lg:overflow-hidden lg:border-l-0"
         )}>
-           <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-             <h3 className="font-semibold text-slate-900">Содержание</h3>
+           <div className={cn("p-4 border-b flex items-center justify-between", isImmersive ? "border-slate-800" : "border-slate-100")}>
+             <h3 className={cn("font-semibold", isImmersive ? "text-white" : "text-slate-900")}>Содержание</h3>
              <button 
                onClick={() => setIsSidebarOpen(false)}
-               className="p-1 hover:bg-slate-100 rounded-md text-slate-500 lg:hidden"
+               className={cn("p-1 rounded-md lg:hidden", isImmersive ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-100 text-slate-500")}
              >
                <ChevronRight className="w-5 h-5" />
              </button>
@@ -355,8 +382,11 @@ export default function CourseLearnPage() {
            
            <div className="flex-1 overflow-y-auto">
              {course.modules.map((module, mIdx) => (
-               <div key={module.id} className="border-b border-slate-100 last:border-0">
-                 <div className="px-4 py-3 bg-slate-50 font-medium text-slate-800 text-sm flex items-center justify-between sticky top-0 z-10">
+               <div key={module.id} className={cn("border-b last:border-0", isImmersive ? "border-slate-800" : "border-slate-100")}>
+                 <div className={cn(
+                   "px-4 py-3 font-medium text-sm flex items-center justify-between sticky top-0 z-10",
+                   isImmersive ? "bg-slate-800 text-slate-200" : "bg-slate-50 text-slate-800"
+                 )}>
                    <span>Модуль {mIdx + 1}: {module.title}</span>
                  </div>
                  <div>
@@ -370,37 +400,44 @@ export default function CourseLearnPage() {
                          key={lesson.id}
                          onClick={() => setActiveLesson(lesson)}
                          className={cn(
-                           "w-full px-4 py-3 flex items-start gap-3 text-left transition-colors hover:bg-slate-50",
-                           isActive ? "bg-indigo-50 border-l-4 border-indigo-600" : "border-l-4 border-transparent"
+                           "w-full px-4 py-3 flex items-start gap-3 text-left transition-colors",
+                           isImmersive ? "hover:bg-slate-800" : "hover:bg-slate-50",
+                           isActive 
+                             ? isImmersive ? "bg-slate-800 border-l-4" : "bg-indigo-50 border-l-4" 
+                             : "border-l-4 border-transparent"
                          )}
-                         style={isActive ? { backgroundColor: `${theme?.primaryColor}10`, borderColor: theme?.primaryColor } : {}}
+                         style={isActive ? { 
+                           borderColor: theme?.primaryColor || '#4f46e5',
+                           backgroundColor: isImmersive ? 'rgba(255,255,255,0.05)' : `${theme?.primaryColor || '#4f46e5'}10`
+                         } : {}}
                        >
                          <div className="mt-0.5">
                            {isCompleted ? (
                              <CheckCircle className="w-4 h-4 text-emerald-500" />
                            ) : isLocked ? (
-                             <Lock className="w-4 h-4 text-slate-300" />
+                             <Lock className={cn("w-4 h-4", isImmersive ? "text-slate-600" : "text-slate-300")} />
                            ) : (
                              <div className={cn(
                                "w-4 h-4 rounded-full border-2",
-                               isActive ? "border-indigo-600" : "border-slate-300"
+                               isActive ? "" : isImmersive ? "border-slate-600" : "border-slate-300"
                              )} 
-                             style={isActive ? { borderColor: theme?.primaryColor } : {}}
+                             style={isActive ? { borderColor: theme?.primaryColor || '#4f46e5' } : {}}
                              />
                            )}
                          </div>
                          <div>
                            <div className={cn(
                              "text-sm font-medium line-clamp-2",
-                             isActive ? "text-indigo-900" : "text-slate-700",
-                             isCompleted && "text-slate-500"
+                             isActive 
+                               ? "" // Color handled by style
+                               : isCompleted ? "text-slate-500" : isImmersive ? "text-slate-300" : "text-slate-700"
                            )}
-                           style={isActive ? { color: theme?.primaryColor } : {}}
+                           style={isActive ? { color: theme?.primaryColor || '#4f46e5' } : {}}
                            >
                              {lIdx + 1}. {lesson.title}
                            </div>
                            <div className="flex items-center gap-2 mt-1">
-                             <span className="text-xs text-slate-400 flex items-center gap-1">
+                             <span className={cn("text-xs flex items-center gap-1", isImmersive ? "text-slate-500" : "text-slate-400")}>
                                <Clock className="w-3 h-3" />
                                {lesson.duration ? `${Math.ceil(lesson.duration / 60)} мин` : '10 мин'}
                              </span>

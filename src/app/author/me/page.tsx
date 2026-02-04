@@ -47,8 +47,8 @@ export default function AuthorMyPage() {
       bio: 'Расскажите о себе...',
       tags: [],
       directions: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     // We don't upsert immediately to avoid side effects during render, 
     // but in a real app we might fetch or prompt creation.
@@ -155,8 +155,8 @@ export default function AuthorMyPage() {
                  </div>
                  
                  {activeTab === 'lessons' ? (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     {authorLessons.map(lesson => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {authorLessons.map(lesson => (
                        <Link key={lesson.id} href={`/buyer/lessons/${lesson.id}`} className="group">
                          <Card variant="hover" className="h-full border-slate-200 hover:border-primary-200">
                            <div className="aspect-video bg-slate-100 relative overflow-hidden rounded-t-xl">
@@ -186,8 +186,8 @@ export default function AuthorMyPage() {
                      )}
                    </div>
                  ) : (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     {authorCourses.map(course => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {authorCourses.map(course => (
                        <CourseCard key={course.id} course={course} showBuyButton={false} />
                      ))}
                      {authorCourses.length === 0 && (

@@ -68,7 +68,7 @@ export function ThemeEditor({ course, onUpdate }: ThemeEditorProps) {
             ].map((layout) => (
               <button
                 key={layout.id}
-                onClick={() => handleUpdate({ layout: layout.id as any })}
+                onClick={() => handleUpdate({ layout: layout.id as CourseTheme['layout'] })}
                 className={cn(
                   "p-4 rounded-xl border-2 text-left transition-all",
                   theme.layout === layout.id
@@ -154,7 +154,7 @@ export function ThemeEditor({ course, onUpdate }: ThemeEditorProps) {
               ].map((font) => (
                 <button
                   key={font.id}
-                  onClick={() => handleUpdate({ fontFamily: font.id as any })}
+                  onClick={() => handleUpdate({ fontFamily: font.id as CourseTheme['fontFamily'] })}
                   className={cn(
                     "w-full px-4 py-2 rounded-lg border text-left text-sm transition-colors flex items-center justify-between",
                     theme.fontFamily === font.id
@@ -215,7 +215,7 @@ export function ThemeEditor({ course, onUpdate }: ThemeEditorProps) {
             ].map((style) => (
               <button
                 key={style.id}
-                onClick={() => handleUpdate({ coverStyle: style.id as any })}
+                onClick={() => handleUpdate({ coverStyle: style.id as CourseTheme['coverStyle'] })}
                 className={cn(
                   "p-3 rounded-xl border text-center text-sm transition-all",
                   theme.coverStyle === style.id

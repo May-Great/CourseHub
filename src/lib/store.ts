@@ -29,7 +29,7 @@ interface AppState {
   };
   
   // Actions
-  setUserRole: (role: 'author' | 'buyer') => void;
+  setUserRole: (role: 'author' | 'buyer' | null) => void;
   setCurrentUser: (user: User | null) => void;
   purchaseCourse: (courseId: string) => void;
   updateProgress: (progress: UserProgress) => void;
@@ -38,6 +38,10 @@ interface AppState {
   // Video player position
   updateVideoPosition: (courseId: string, lessonId: string, position: number) => void;
   getVideoPosition: (courseId: string, lessonId: string) => number;
+
+  // Hydration state
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -48,6 +52,7 @@ export const useAppStore = create<AppState>()(
       purchasedCourses: [],
       userProgress: [],
       chatMessages: [],
+      _hasHydrated: false,
       
       planLimits: {
         free: {
@@ -95,10 +100,15 @@ export const useAppStore = create<AppState>()(
         const key = `video_${courseId}_${lessonId}`;
         const position = localStorage.getItem(key);
         return position ? parseInt(position, 10) : 0;
-      }
+      },
+      
+      setHasHydrated: (state) => set({ _hasHydrated: state })
     }),
     {
       name: 'course-platform-storage',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       partialize: (state) => ({
         userRole: state.userRole,
         currentUser: state.currentUser,

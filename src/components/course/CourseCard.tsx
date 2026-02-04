@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Course } from '@/lib/types';
 import { formatPrice } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { strings } from '@/lib/strings.ru';
 import { User, Star, Clock, BookOpen, Bookmark, BookmarkCheck } from 'lucide-react';
 import { useStudentStore } from '@/lib/stores/studentStore';
@@ -39,7 +40,7 @@ export function CourseCard({
   };
   
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary-900/5 transition-all duration-300 border border-slate-100 hover:border-primary-100 flex flex-col h-full relative">
+    <Card className="group overflow-hidden hover:shadow-2xl hover:shadow-primary-900/5 transition-all duration-300 border-slate-100 hover:border-primary-100 flex flex-col h-full relative p-0">
       
       {/* Save Button (Absolute) */}
       <button 
@@ -139,16 +140,29 @@ export function CourseCard({
         {/* Actions - Visible on Hover */}
         <div className="mt-4 pt-0 h-0 opacity-0 overflow-hidden group-hover:h-auto group-hover:opacity-100 group-hover:pt-2 transition-all duration-300">
           {userRole === 'author' ? (
-            <Link 
-              href={`/author/courses/${course.id}`}
-              className="block"
-            >
-              <Button 
-                className="w-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 border-none"
+            <div className="flex gap-2">
+              <Link 
+                href={`/buyer/courses/${course.id}`}
+                className="flex-1"
               >
-                Edit Course
-              </Button>
-            </Link>
+                <Button 
+                  variant="outline"
+                  className="w-full hover:bg-slate-50"
+                >
+                  Открыть
+                </Button>
+              </Link>
+              <Link 
+                href={`/author/courses/${course.id}`}
+                className="flex-1"
+              >
+                <Button 
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 border-none"
+                >
+                  Редактировать
+                </Button>
+              </Link>
+            </div>
           ) : showBuyButton ? (
             <EnrollButton course={course} className="w-full" />
           ) : (
@@ -165,6 +179,6 @@ export function CourseCard({
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -229,17 +229,17 @@ export const useCourseStore = create<CourseState>()(
     {
       name: 'course-platform-courses-v2', // New version name to force migration
       version: 2, // Versioning
-      migrate: (persistedState: any, version) => {
+      migrate: (persistedState: unknown, version) => {
         if (version === 0 || version === 1) {
           // Migration logic from v1 to v2
           // v1 only had purchasedCourses and quickCreateData
           return {
-            ...persistedState,
+            ...(persistedState as object),
             courses: [], // Initialize empty, will be hydrated by initialize()
             isInitialized: false
           };
         }
-        return persistedState;
+        return persistedState as CourseState;
       },
     }
   )

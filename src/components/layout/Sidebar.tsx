@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAppStore } from '@/lib/store';
+import { useAuthStore } from '@/lib/stores/authStore';
 import { strings } from '@/lib/strings.ru';
 import { 
   LayoutDashboard, 
@@ -19,6 +19,7 @@ import {
   Video,
   PenSquare
 } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
 
 interface SidebarItem {
   href: string;
@@ -49,17 +50,16 @@ const buyerItems: SidebarItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  // Optimization: Select only the userRole from the store to prevent unnecessary re-renders
-  // when other parts of the state change (like progress or chat messages)
-  const userRole = useAppStore((state) => state.userRole);
+  const userRole = useAuthStore((state) => state.userRole);
   
   const items = userRole === 'author' ? authorItems : buyerItems;
+  const homeLink = userRole === 'author' ? '/author/me' : (userRole === 'buyer' ? '/buyer/catalog' : '/');
   
   return (
     <div className="hidden md:flex md:w-64 md:flex-col fixed inset-y-0 left-0 z-50">
       <div className="flex flex-col flex-grow bg-white border-r border-slate-200">
         <div className="flex items-center flex-shrink-0 h-16 px-6 border-b border-slate-100">
-          <Link href="/" className="text-xl font-bold text-slate-900 flex items-center space-x-2">
+          <Link href={homeLink} className="text-xl font-bold text-slate-900 flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">C</span>
             </div>

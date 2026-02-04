@@ -1,168 +1,260 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { useAppStore } from '@/lib/store';
-import { strings } from '@/lib/strings.ru';
-import { BookOpen, GraduationCap, ArrowRight, RotateCcw, Sparkles } from 'lucide-react';
+import { 
+  BookOpen, 
+  GraduationCap, 
+  ArrowRight, 
+  Sparkles, 
+  CheckCircle2, 
+  Users, 
+  Zap, 
+  ShieldCheck,
+  PlayCircle
+} from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { useAuthStore } from '@/lib/stores/authStore';
+import { Logo } from '@/components/ui/Logo';
 
 export default function Home() {
-  const router = useRouter();
-  const { userRole, setUserRole, setCurrentUser } = useAppStore();
+  const { userRole, initialized } = useAuthStore();
   
-  const handleRoleSelect = (role: 'author' | 'buyer') => {
-    setUserRole(role);
-    // Mock login
-    setCurrentUser({
-      id: 'current-user',
-      name: role === 'author' ? 'Иван Автор' : 'Петр Студент',
-      email: role === 'author' ? 'author@example.com' : 'student@example.com',
-      role: role
-    });
-    
-    if (role === 'author') {
-      router.push('/author/me');
-    } else {
-      router.push('/buyer/catalog');
-    }
-  };
-  
-  const handleResetRole = () => {
-    setUserRole(null as any);
-    setCurrentUser(null);
-    window.location.reload();
-  };
-  
-  // Если роль уже выбрана, показываем кнопку сброса (Premium Welcome Back Card)
-  if (userRole) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-           <Card variant="hover" className="p-8 text-center border-slate-200">
-             <div className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-soft">
-              {userRole === 'author' ? (
-                <BookOpen className="w-8 h-8 text-primary-600" />
-              ) : (
-                <GraduationCap className="w-8 h-8 text-primary-600" />
-              )}
-            </div>
-            
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
-              С возвращением!
-            </h2>
-            <p className="text-slate-500 mb-8 font-medium">
-              Вы авторизованы как <span className="text-primary-600 font-bold">{userRole === 'author' ? 'Автор' : 'Студент'}</span>
-            </p>
-            
-            <div className="space-y-3">
-              <Button
-                size="lg"
-                className="w-full justify-center bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/30 rounded-xl h-12 text-base"
-                onClick={() => userRole === 'author' ? router.push('/author/me') : router.push('/buyer/catalog')}
-              >
-                Продолжить работу
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                onClick={handleResetRole}
-                className="w-full text-slate-400 hover:text-slate-700 hover:bg-slate-50"
-              >
-                <RotateCcw className="mr-2 w-4 h-4" />
-                Сменить роль
-              </Button>
-            </div>
-           </Card>
-        </div>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Decorative Background Blobs */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-primary-100 rounded-full blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-100 rounded-full blur-3xl opacity-30 translate-x-1/3 translate-y-1/3 pointer-events-none" />
+  // Navigation for Header
+  const navLinks = [
+    { label: 'Возможности', href: '#features' },
+    { label: 'Для авторов', href: '#authors' },
+    { label: 'Для студентов', href: '#students' },
+    { label: 'Цены', href: '#pricing' },
+  ];
 
-      <div className="max-w-6xl w-full mx-auto relative z-10">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center px-4 py-2 bg-white rounded-full shadow-sm border border-slate-100 mb-8 animate-fade-in-up">
-            <Sparkles className="w-4 h-4 text-amber-400 mr-2 fill-current" />
-            <span className="text-sm font-semibold text-slate-600">Образовательная платформа нового поколения</span>
+  return (
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-primary-100 selection:text-primary-900">
+      
+      {/* --- Navbar --- */}
+      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b border-slate-100 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center">
+             <Logo />
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-slate-900 mb-6 tracking-tight leading-tight">
-            CourseHub — <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-600">учёба потоком</span>
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map(link => (
+              <Link key={link.href} href={link.href} className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {initialized && userRole ? (
+               <Link href={userRole === 'author' ? '/author/me' : '/buyer/catalog'}>
+                 <Button className="bg-primary-600 hover:bg-primary-700 text-white">
+                   В кабинет
+                   <ArrowRight className="w-4 h-4 ml-2" />
+                 </Button>
+               </Link>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 hidden sm:block">
+                  Войти
+                </Link>
+                <Link href="/login?role=buyer">
+                  <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6">
+                    Начать учиться
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* --- Hero Section --- */}
+      <section className="pt-32 pb-20 lg:pt-40 lg:pb-28 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+           <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-gradient-to-br from-primary-100 to-indigo-100 rounded-full blur-3xl opacity-50" />
+           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-indigo-100 to-rose-100 rounded-full blur-3xl opacity-50" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <div className="inline-flex items-center justify-center px-4 py-1.5 bg-primary-50 border border-primary-100 rounded-full mb-8 animate-fade-in-up">
+            <Sparkles className="w-4 h-4 text-primary-600 mr-2" />
+            <span className="text-sm font-semibold text-primary-700">Платформа 2.0 уже доступна</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
+            Учитесь и обучайте <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-600">в потоке вдохновения</span>
           </h1>
-          <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">
-            Создавайте курсы без рутины и учитесь с удовольствием. <br className="hidden md:block"/>
-            Платформа, которая не отвлекает от главного.
+          
+          <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Платформа для авторов с практическим опытом и студентов, которые хотят получить реальные навыки, а не просто пройти курс для галочки.
           </p>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto px-4">
-          {/* Author Card */}
-          <div 
-            className="group bg-white rounded-[2rem] p-10 border border-slate-200 hover:border-primary-200 hover:shadow-2xl hover:shadow-primary-900/5 transition-all duration-300 cursor-pointer relative overflow-hidden"
-            onClick={() => handleRoleSelect('author')}
-          >
-            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-primary-50 to-indigo-50 rounded-bl-[4rem] -mr-8 -mt-8 transition-transform group-hover:scale-110" />
-            
-            <div className="relative z-10">
-              <div className="w-16 h-16 bg-white border border-slate-100 shadow-sm rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                <BookOpen className="w-8 h-8 text-primary-600" />
-              </div>
-              
-              <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">
-                {strings.iAmAuthor}
-              </h3>
-              <p className="text-slate-500 mb-8 leading-relaxed font-medium">
-                {strings.authorDescription}
-              </p>
-              
-              <div className="flex items-center text-primary-600 font-bold group-hover:translate-x-2 transition-transform duration-300">
-                Панель автора
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </div>
-            </div>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/login?role=buyer">
+              <Button size="lg" className="w-full sm:w-auto px-8 h-14 text-lg rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-xl shadow-primary-500/20">
+                Начать обучение
+              </Button>
+            </Link>
+            <Link href="/login?role=author">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 h-14 text-lg rounded-full border-slate-200 hover:bg-slate-50 text-slate-700">
+                Стать автором
+              </Button>
+            </Link>
           </div>
           
-          {/* Buyer Card */}
-          <div 
-            className="group bg-white rounded-[2rem] p-10 border border-slate-200 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-900/5 transition-all duration-300 cursor-pointer relative overflow-hidden"
-            onClick={() => handleRoleSelect('buyer')}
-          >
-            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-50 to-primary-50 rounded-bl-[4rem] -mr-8 -mt-8 transition-transform group-hover:scale-110" />
-            
-            <div className="relative z-10">
-              <div className="w-16 h-16 bg-white border border-slate-100 shadow-sm rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                <GraduationCap className="w-8 h-8 text-indigo-600" />
+          <div className="mt-12 flex items-center justify-center space-x-8 text-sm text-slate-500">
+             <div className="flex items-center">
+               <CheckCircle2 className="w-4 h-4 text-emerald-500 mr-2" />
+               Практический опыт
+             </div>
+             <div className="flex items-center">
+               <CheckCircle2 className="w-4 h-4 text-emerald-500 mr-2" />
+               Знания для дела
+             </div>
+             <div className="flex items-center">
+               <CheckCircle2 className="w-4 h-4 text-emerald-500 mr-2" />
+               Удобство и простота
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- Features Grid --- */}
+      <section id="features" className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="text-center mb-16">
+             <h2 className="text-3xl font-bold text-slate-900 mb-4">Всё необходимое в одном месте</h2>
+             <p className="text-slate-500 max-w-2xl mx-auto">
+               Мы убрали всё лишнее, оставив только инструменты, которые действительно помогают учиться и продавать знания.
+             </p>
+           </div>
+
+           <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: Zap,
+                  title: "Делитесь опытом",
+                  desc: "Инструменты для тех, кто хочет передать свои практические знания другим. Помогаем авторам учить."
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "Реальные навыки",
+                  desc: "Обучение ради знаний и скиллов, которые можно применить на практике сразу, а не для галочки."
+                },
+                {
+                  icon: Users,
+                  title: "Простота и фокус",
+                  desc: "Удобная и простая платформа без лишнего шума, где ничто не отвлекает от главного — обучения."
+                }
+              ].map((feature, idx) => (
+                <div key={idx} className="bg-white p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition-shadow duration-300">
+                  <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-6 text-primary-600">
+                    <feature.icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+                  <p className="text-slate-500 leading-relaxed">{feature.desc}</p>
+                </div>
+              ))}
+           </div>
+        </div>
+      </section>
+
+      {/* --- Role Split Section --- */}
+      <section className="py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Authors */}
+            <div id="authors" className="relative group cursor-pointer" onClick={() => window.location.href = '/login?role=author'}>
+              <div className="absolute inset-0 bg-primary-600 rounded-3xl rotate-1 group-hover:rotate-2 transition-transform opacity-10" />
+              <div className="relative bg-white border border-slate-200 rounded-3xl p-10 hover:border-primary-200 transition-colors">
+                <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mb-6">
+                   <BookOpen className="w-8 h-8 text-primary-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">Для Авторов</h3>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center text-slate-600">
+                    <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3" />
+                    Удобный конструктор курсов
+                  </li>
+                  <li className="flex items-center text-slate-600">
+                    <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3" />
+                    Аналитика продаж и прогресса
+                  </li>
+                  <li className="flex items-center text-slate-600">
+                    <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3" />
+                    Маркетинговые инструменты
+                  </li>
+                </ul>
+                <Button variant="outline" className="w-full">Создать курс</Button>
               </div>
-              
-              <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">
-                {strings.iAmBuyer}
-              </h3>
-              <p className="text-slate-500 mb-8 leading-relaxed font-medium">
-                {strings.buyerDescription}
-              </p>
-              
-              <div className="flex items-center text-indigo-600 font-bold group-hover:translate-x-2 transition-transform duration-300">
-                Каталог курсов
-                <ArrowRight className="ml-2 w-5 h-5" />
+            </div>
+
+            {/* Students */}
+            <div id="students" className="relative group cursor-pointer" onClick={() => window.location.href = '/login?role=buyer'}>
+              <div className="absolute inset-0 bg-indigo-600 rounded-3xl -rotate-1 group-hover:-rotate-2 transition-transform opacity-10" />
+              <div className="relative bg-white border border-slate-200 rounded-3xl p-10 hover:border-indigo-200 transition-colors">
+                 <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mb-6">
+                   <GraduationCap className="w-8 h-8 text-indigo-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">Для Студентов</h3>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center text-slate-600">
+                    <CheckCircle2 className="w-5 h-5 text-indigo-500 mr-3" />
+                    Доступ к тысячам курсов
+                  </li>
+                  <li className="flex items-center text-slate-600">
+                    <CheckCircle2 className="w-5 h-5 text-indigo-500 mr-3" />
+                    Интерактивные задания и тесты
+                  </li>
+                  <li className="flex items-center text-slate-600">
+                    <CheckCircle2 className="w-5 h-5 text-indigo-500 mr-3" />
+                    Практические навыки
+                  </li>
+                </ul>
+                <Button variant="outline" className="w-full">Найти курс</Button>
               </div>
             </div>
           </div>
         </div>
-        
-        <div className="text-center mt-20">
-          <p className="text-slate-400 text-sm font-medium">
-            © 2026 CourseHub Platform. Designed for focus.
-          </p>
+      </section>
+
+      {/* --- CTA Section --- */}
+      <section className="py-24 bg-slate-900 text-white overflow-hidden relative">
+         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20">
+            <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary-500 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500 rounded-full blur-3xl" />
+         </div>
+         
+         <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
+           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Готовы начать свой путь?</h2>
+           <p className="text-xl text-slate-200 mb-10">
+             Присоединяйтесь к тысячам пользователей, которые уже изменили свою жизнь с CourseHub.
+           </p>
+           <Link href="/login">
+             <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 px-10 h-14 text-lg rounded-full">
+               Зарегистрироваться бесплатно
+             </Button>
+           </Link>
+           <p className="mt-6 text-sm text-slate-400">
+             Не требует кредитной карты • 14 дней бесплатно
+           </p>
+         </div>
+      </section>
+
+      {/* --- Footer --- */}
+      <footer className="bg-slate-50 py-12 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center mb-4 md:mb-0">
+             <Logo />
+          </div>
+          <div className="text-sm text-slate-500">
+            © 2026 CourseHub Platform. Все права защищены.
+          </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

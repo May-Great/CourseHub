@@ -11,6 +11,7 @@ export { useMiniLessonStore } from './miniLessonStore';
 export { useAuthorProfileStore } from './authorProfileStore';
 export { useStudentStore } from './studentStore';
 export { useCartStore } from './cartStore';
+export { useNotificationStore } from './notificationStore';
 
 // Legacy export for backward compatibility
 export { useAppStore } from '../store';

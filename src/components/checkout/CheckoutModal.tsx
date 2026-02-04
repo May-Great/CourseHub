@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useCartStore, useAppStore } from '@/lib/stores';
+import { useCartStore, useStudentStore } from '@/lib/stores';
 import { X, CreditCard, Lock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
 
 export const CheckoutModal = () => {
   const { items, isOpen, setIsOpen, clearCart, getTotal } = useCartStore();
-  const { purchaseCourse } = useAppStore();
+  const { purchaseCourse } = useStudentStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();

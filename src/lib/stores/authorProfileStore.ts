@@ -40,15 +40,15 @@ export const useAuthorProfileStore = create<AuthorProfileState>()(
         const existingIndex = state.profiles.findIndex((p) => p.id === profile.id);
         if (existingIndex >= 0) {
           const newProfiles = [...state.profiles];
-          newProfiles[existingIndex] = { ...profile, updatedAt: Date.now() };
+          newProfiles[existingIndex] = { ...profile, updatedAt: new Date().toISOString() };
           return { profiles: newProfiles };
         }
-        return { profiles: [...state.profiles, { ...profile, createdAt: Date.now(), updatedAt: Date.now() }] };
+        return { profiles: [...state.profiles, { ...profile, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }] };
       }),
       
       updateAuthorProfile: (id, updates) => set((state) => ({
         profiles: state.profiles.map((p) => 
-          p.id === id ? { ...p, ...updates, updatedAt: Date.now() } : p
+          p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p
         )
       })),
       

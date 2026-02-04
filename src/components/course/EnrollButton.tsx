@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCartStore, useAppStore } from '@/lib/stores';
+import { useCartStore, useStudentStore } from '@/lib/stores';
 import { Button } from '@/components/ui/Button';
 import { ShoppingCart, PlayCircle, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -18,7 +18,7 @@ export const EnrollButton: React.FC<EnrollButtonProps> = ({
   variant = 'primary',
   size = 'md'
 }) => {
-  const { purchasedCourses } = useAppStore();
+  const { purchasedCourses } = useStudentStore();
   const { addItem, isInCart, setIsOpen } = useCartStore();
   const router = useRouter();
 

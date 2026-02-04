@@ -10,12 +10,15 @@ interface StudentState {
   watchedMiniLessons: WatchedLesson[];
   savedMiniLessons: string[]; // IDs
   savedCourses: string[]; // IDs
+  purchasedCourses: string[]; // IDs
 
   markMiniLessonAsWatched: (lessonId: string) => void;
   toggleSaveMiniLesson: (lessonId: string) => void;
   toggleSaveCourse: (courseId: string) => void;
+  purchaseCourse: (courseId: string) => void;
   isMiniLessonSaved: (lessonId: string) => boolean;
   isCourseSaved: (courseId: string) => boolean;
+  isCoursePurchased: (courseId: string) => boolean;
 }
 
 export const useStudentStore = create<StudentState>()(
@@ -24,6 +27,7 @@ export const useStudentStore = create<StudentState>()(
       watchedMiniLessons: [],
       savedMiniLessons: [],
       savedCourses: [],
+      purchasedCourses: [],
 
       markMiniLessonAsWatched: (lessonId) => set((state) => {
         // Remove if exists to push to top (most recent)
@@ -51,12 +55,22 @@ export const useStudentStore = create<StudentState>()(
         };
       }),
 
+      purchaseCourse: (courseId) => set((state) => ({
+        purchasedCourses: state.purchasedCourses.includes(courseId) 
+          ? state.purchasedCourses 
+          : [...state.purchasedCourses, courseId]
+      })),
+
       isMiniLessonSaved: (lessonId) => {
         return get().savedMiniLessons.includes(lessonId);
       },
 
       isCourseSaved: (courseId) => {
         return get().savedCourses.includes(courseId);
+      },
+
+      isCoursePurchased: (courseId) => {
+        return get().purchasedCourses.includes(courseId);
       }
     }),
     {

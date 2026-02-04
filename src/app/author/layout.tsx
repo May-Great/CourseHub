@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppStore } from '@/lib/store';
+import { useAuthStore } from '@/lib/stores/authStore';
 import { Topbar } from '@/components/layout/Topbar';
 import { strings } from '@/lib/strings.ru';
 
@@ -12,9 +12,11 @@ export default function AuthorLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { userRole } = useAppStore();
+  const { userRole, initialized } = useAuthStore();
   
   useEffect(() => {
+    if (!initialized) return;
+
     if (!userRole) {
       router.push('/');
     } else if (userRole === 'buyer') {
@@ -22,10 +24,10 @@ export default function AuthorLayout({
       // Redirect to buyer's home instead of auto-switching role
       router.push('/buyer/catalog');
     }
-  }, [userRole, router]);
+  }, [userRole, router, initialized]);
   
   // Show nothing while checking or if unauthorized
-  if (!userRole || userRole !== 'author') {
+  if (!initialized || !userRole || userRole !== 'author') {
     return null;
   }
   

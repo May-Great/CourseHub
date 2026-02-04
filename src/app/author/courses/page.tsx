@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { mockCourses } from '@/lib/mockData';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useCourseStore } from '@/lib/stores';
 import { CourseCard } from '@/components/course/CourseCard';
 import { Button } from '@/components/ui/Button';
 import { strings } from '@/lib/strings.ru';
@@ -10,6 +12,25 @@ import { Plus, Search, Filter } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 
 export default function AuthorCourses() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const { courses, initialize } = useCourseStore();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    setSearchQuery(searchParams.get('search') || '');
+  }, [searchParams]);
+
+  const filteredCourses = courses.filter(course => 
+    course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <PageShell>
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -29,6 +50,8 @@ export default function AuthorCourses() {
              <input 
                type="text" 
                placeholder="Поиск курса..." 
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
                className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-300 w-64"
              />
            </div>
@@ -47,16 +70,16 @@ export default function AuthorCourses() {
         </div>
       </div>
       
-      {mockCourses.length === 0 ? (
+      {filteredCourses.length === 0 ? (
         <Card className="text-center py-20 border-dashed border-2 border-slate-200 shadow-none bg-slate-50/50">
           <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">
             <Plus className="w-8 h-8 text-primary-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
-            {strings.noCourses}
+            {courses.length === 0 ? strings.noCourses : 'Курсы не найдены'}
           </h3>
           <p className="text-slate-500 mb-8 max-w-md mx-auto">
-            {strings.noCoursesDescription}
+            {courses.length === 0 ? strings.noCoursesDescription : `По запросу "${searchQuery}" ничего не найдено.`}
           </p>
           <Link href="/author/courses/new">
             <Button size="lg" className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 border-none rounded-xl">
@@ -67,10 +90,11 @@ export default function AuthorCourses() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {mockCourses.map((course) => (
+          {filteredCourses.map((course) => (
             <CourseCard
               key={course.id}
               course={course}
+              userRole="author"
             />
           ))}
         </div>

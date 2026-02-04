@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { CourseCard } from '@/components/course/CourseCard';
-import { useAppStore, useCourseStore } from '@/lib/stores';
+import { useStudentStore, useCourseStore } from '@/lib/stores';
 import { strings } from '@/lib/strings.ru';
 import { PageShell } from '@/components/layout/PageShell';
 import { Search, Filter, SlidersHorizontal, X } from 'lucide-react';
@@ -10,14 +11,33 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 
 export default function BuyerCatalog() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const initialSearch = searchParams.get('search') || '';
+  
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const { purchaseCourse } = useAppStore();
+  const { purchaseCourse } = useStudentStore();
   const { courses, initialize } = useCourseStore();
 
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  // Sync state with URL params
+  useEffect(() => {
+    const query = searchParams.get('search') || '';
+    if (query !== searchQuery) {
+      setSearchQuery(query);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  // Update URL when search changes (debounced ideally, but simple push for now on enter or button click)
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    // Optional: update URL in real-time or just let local state handle it until navigation
+  };
   
   const categories = Array.from(new Set(courses.map(course => course.category)));
   
@@ -53,7 +73,7 @@ export default function BuyerCatalog() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-soft text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-300 transition-all"
             placeholder="Чему хотите научиться сегодня?"
           />
@@ -91,7 +111,7 @@ export default function BuyerCatalog() {
               Курсы не найдены
             </h3>
             <p className="text-slate-500 max-w-md mx-auto">
-              Мы не нашли ничего по запросу "{searchQuery}". Попробуйте изменить ключевые слова или сбросить фильтры.
+              Мы не нашли ничего по запросу &quot;{searchQuery}&quot;. Попробуйте изменить ключевые слова или сбросить фильтры.
             </p>
             <Button 
               variant="outline" 

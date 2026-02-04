@@ -26,8 +26,8 @@ export interface AuthorProfile {
   };
   views?: number;
   followersCount?: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MiniLesson {
@@ -342,7 +342,7 @@ export interface Notification {
   createdAt: string;
   readAt?: string;
   actionUrl?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Analytics types

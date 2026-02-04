@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useMiniLessonStore, useCourseStore, useAppStore, useStudentStore } from '@/lib/stores';
+import { useMiniLessonStore, useCourseStore, useAppStore } from '@/lib/stores';
+import { useStudentStore } from '@/lib/stores/studentStore';
 import { PageShell } from '@/components/layout/PageShell';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';

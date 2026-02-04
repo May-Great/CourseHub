@@ -49,7 +49,9 @@ export function Tabs({ tabs, defaultTab, className }: TabsProps) {
       
       {/* Tab Content */}
       <div className="p-6">
-        {activeTabContent}
+        <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {activeTabContent}
+        </div>
       </div>
     </div>
   );

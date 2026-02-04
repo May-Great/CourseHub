@@ -6,7 +6,7 @@ import { Lesson } from '@/lib/types';
 import { CourseCard } from '@/components/course/CourseCard';
 import { MiniLessonCard } from '@/components/content/MiniLessonCard';
 import { DeadlineCalendar } from '@/components/cohort/DeadlineCalendar';
-import { useAppStore, useCourseStore, useMiniLessonStore, useStudentStore } from '@/lib/stores';
+import { useCourseStore, useMiniLessonStore, useStudentStore, useProgressStore } from '@/lib/stores';
 import { strings } from '@/lib/strings.ru';
 import { PageShell } from '@/components/layout/PageShell';
 import { BookOpen, Calendar, Clock, ArrowRight, Heart, History, PlayCircle, Bookmark } from 'lucide-react';
@@ -15,10 +15,10 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 
 export default function BuyerCourses() {
-  const { purchasedCourses, userProgress } = useAppStore();
   const { courses, initialize: initCourses } = useCourseStore();
   const { miniLessons, initialize: initLessons } = useMiniLessonStore();
-  const { savedCourses, savedMiniLessons, watchedMiniLessons } = useStudentStore();
+  const { purchasedCourses, savedCourses, savedMiniLessons, watchedMiniLessons } = useStudentStore();
+  const { userProgress } = useProgressStore();
 
   const [activeTab, setActiveTab] = useState<'enrolled' | 'saved' | 'history'>('enrolled');
 

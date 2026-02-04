@@ -10,9 +10,7 @@ import { GamificationStats } from '@/components/gamification/GamificationStats';
 import Link from 'next/link';
 
 export default function BuyerProfile() {
-  const { purchasedCourses } = useAppStore();
-  // Rename legacy userProgress to avoid conflict
-  const { userProgress: legacyProgress } = useAppStore();
+  const { purchasedCourses } = useStudentStore();
   const { userProgress } = useProgressStore();
   const { watchedMiniLessons, savedCourses, savedMiniLessons } = useStudentStore();
   const { miniLessons, initialize: initLessons } = useMiniLessonStore();
