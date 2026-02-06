@@ -106,7 +106,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       // Fallback: any other password login attempt in mock mode fails
       set({ loading: false });
-      return { error: { message: 'Неверный логин или пароль (Демо: используйте adminIMN1/adminIMN1)' } };
+      return { error: new Error('Неверный логин или пароль (Демо: используйте adminIMN1/adminIMN1)') };
     }
 
     // --- Supabase Logic ---
@@ -146,12 +146,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signInWithOAuth: async (provider: 'google' | 'yandex') => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      return { error: { message: 'OAuth не работает в демо-режиме (нужен Supabase)', name: 'MockError' } };
+      return { error: new Error('OAuth не работает в демо-режиме (нужен Supabase)') };
     }
 
     const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: provider,
+      provider: provider as any,
       options: {
         redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
       },

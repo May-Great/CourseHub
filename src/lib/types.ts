@@ -46,11 +46,13 @@ export interface MiniLesson {
   views?: number;
 }
 
+export type LessonType = 'video' | 'pdf' | 'audio' | 'text' | 'quiz';
+
 export interface Lesson {
   id: string;
   title: string;
   description: string;
-  type: 'video' | 'pdf' | 'audio' | 'text' | 'quiz';
+  type: LessonType;
   content: string; // URL for video/audio/pdf, text content for text type
   duration?: number; // in seconds
   materials?: Material[];
