@@ -240,6 +240,7 @@ function LoginForm() {
               )}
             </Button>
 
+            {/* 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-slate-200" />
@@ -272,6 +273,7 @@ function LoginForm() {
                 <span className="font-bold text-red-500 mr-1">Я</span>ндекс
               </Button>
             </div>
+            */}
 
             <div className="text-center mt-4">
             <button
