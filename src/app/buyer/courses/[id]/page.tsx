@@ -353,7 +353,7 @@ export default function CourseLearnPage() {
                      
                      {activeTab === 'reviews' && (
                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                         <CourseReviews courseId={course.id} />
+                         <CourseReviews courseId={course.id} progressPercentage={progressPercentage} />
                        </div>
                      )}
                      
