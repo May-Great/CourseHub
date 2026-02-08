@@ -41,17 +41,27 @@ export default function AuthorCourses() {
           id: c.id,
           title: c.title,
           description: c.description || '',
+          shortDescription: c.description || '', // Added required field
           authorId: c.author_id,
-          authorName: currentUser.name || 'Me', // We know it's current user
+          authorName: currentUser.name || 'Me', 
+          thumbnail: c.cover_url, // Changed from coverUrl to thumbnail
           price: c.price,
-          coverUrl: c.cover_url,
-          modules: [], // We don't need modules for list view usually, or fetch separately
-          category: 'Development', // Placeholder
-          level: 'Beginner', // Placeholder
-          rating: 0,
+          category: 'Development', 
+          modules: [],
+          createdAt: c.created_at, // Added required field
+          updatedAt: c.updated_at, // Added required field
           studentsCount: 0,
-          lastUpdated: c.updated_at,
-          isPublished: c.is_published
+          rating: 0,
+          tags: [], // Added required field
+          status: c.is_published ? 'published' : 'draft', // Changed from isPublished to status
+          settings: { // Added required field
+            hasDeadlines: false,
+            autoAdvance: false,
+            allowLateSubmissions: false,
+            requireSequentialProgress: false,
+            certificateEnabled: false,
+            discussionEnabled: false
+          }
         }));
 
         setCourses(mappedCourses);

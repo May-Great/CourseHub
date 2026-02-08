@@ -37,17 +37,27 @@ export default function BuyerCatalog() {
           id: c.id,
           title: c.title,
           description: c.description || '',
+          shortDescription: c.description || '',
           authorId: c.author_id,
-          authorName: 'Author', // Placeholder until we join profiles
+          authorName: 'Author',
+          thumbnail: c.cover_url,
           price: c.price,
-          coverUrl: c.cover_url,
-          modules: [],
           category: 'General',
-          level: 'All',
-          rating: 5,
+          modules: [],
+          createdAt: c.created_at,
+          updatedAt: c.updated_at,
           studentsCount: 0,
-          lastUpdated: c.updated_at,
-          isPublished: c.is_published
+          rating: 5,
+          tags: [],
+          status: c.is_published ? 'published' : 'draft',
+          settings: {
+            hasDeadlines: false,
+            autoAdvance: false,
+            allowLateSubmissions: false,
+            requireSequentialProgress: false,
+            certificateEnabled: false,
+            discussionEnabled: false
+          }
         }));
         setCourses(mappedCourses);
       }

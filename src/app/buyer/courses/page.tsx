@@ -41,16 +41,27 @@ export default function BuyerCourses() {
           id: item.course.id,
           title: item.course.title,
           description: item.course.description,
+          shortDescription: item.course.description || '',
           authorId: item.course.author_id,
-          authorName: 'Unknown', // Need to fetch or join profile
+          authorName: 'Unknown', 
+          thumbnail: item.course.cover_url,
           price: item.course.price,
-          coverUrl: item.course.cover_url,
-          modules: [],
           category: 'General',
-          level: 'All',
-          rating: 5,
+          modules: [],
+          createdAt: item.course.created_at || new Date().toISOString(),
+          updatedAt: item.course.updated_at,
           studentsCount: 0,
-          lastUpdated: item.course.updated_at
+          rating: 5,
+          tags: [],
+          status: 'published',
+          settings: {
+            hasDeadlines: false,
+            autoAdvance: false,
+            allowLateSubmissions: false,
+            requireSequentialProgress: false,
+            certificateEnabled: false,
+            discussionEnabled: false
+          }
         }));
         setPurchasedCourses(courses);
       }
