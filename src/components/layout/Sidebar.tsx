@@ -23,6 +23,7 @@ import {
   X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 
 interface SidebarItem {
   href: string;
@@ -104,6 +105,25 @@ export function Sidebar() {
       </div>
       
       <div className="flex-shrink-0 p-4 border-t border-slate-100">
+        <Link
+          href="/settings"
+          className="group flex items-center px-3 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors mb-2"
+        >
+          <UserAvatar 
+            user={{ 
+              name: useAuthStore.getState().currentUser?.name, 
+              avatar_url: useAuthStore.getState().currentUser?.avatar 
+            }} 
+            className="mr-2"
+          />
+          <div className="flex flex-col items-start overflow-hidden">
+             <span className="truncate w-32 font-medium text-slate-700 group-hover:text-slate-900">
+               {useAuthStore.getState().currentUser?.name || 'Мой профиль'}
+             </span>
+             <span className="text-xs text-slate-400">Настройки</span>
+          </div>
+        </Link>
+        
         <Link
           href="/"
           className="group flex items-center px-3 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"

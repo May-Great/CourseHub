@@ -8,8 +8,9 @@ import { strings } from '@/lib/strings.ru';
 import { User, Star, BookOpen, Bookmark, BookmarkCheck } from 'lucide-react';
 import { useStudentStore } from '@/lib/stores/studentStore';
 import { EnrollButton } from '@/components/course/EnrollButton';
-import { cn } from '@/lib/utils';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { Badge } from '@/components/ui/Badge';
+import { cn } from '@/lib/utils';
 
 interface CourseCardProps {
   course: Course;
@@ -60,7 +61,7 @@ export function CourseCard({
       {/* Image Container */}
       <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
         <Image
-          src={course.thumbnail || course.coverUrl || '/placeholder-course.jpg'}
+          src={course.thumbnail || '/placeholder-course.jpg'}
           alt={course.title}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -72,8 +73,8 @@ export function CourseCard({
         {/* Status Badge for Authors */}
         {userRole === 'author' && (
           <div className="absolute top-3 right-3 z-20">
-            <Badge variant={course.isPublished ? 'success' : 'secondary'} className="shadow-lg">
-              {course.isPublished ? 'Опубликован' : 'Черновик'}
+            <Badge variant={course.status === 'published' ? 'success' : 'secondary'} className="shadow-lg">
+              {course.status === 'published' ? 'Опубликован' : 'Черновик'}
             </Badge>
           </div>
         )}
@@ -122,8 +123,17 @@ export function CourseCard({
           <div className="flex items-center space-x-4">
             {!hideAuthor && (
               <span className="flex items-center">
-                <User className="w-3.5 h-3.5 mr-1.5" />
-                {course.authorName}
+                <div className="mr-2 transform scale-75 origin-left">
+                  <UserAvatar 
+                    user={{ 
+                      name: course.authorName,
+                      // TODO: Add authorAvatar to Course type and fetch it
+                    }} 
+                    className="h-6 w-6"
+                    showName={false}
+                  />
+                </div>
+                <span className="text-xs">{course.authorName}</span>
               </span>
             )}
             <span className="flex items-center">

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useCourseStore } from '@/lib/stores';
 import { Button } from '@/components/ui/Button';
 import { strings } from '@/lib/strings.ru';
 import { Course, Module, Lesson, CourseTheme } from '@/lib/types';
@@ -24,79 +23,374 @@ import {
   List,
   CheckCircle,
   Palette,
-  Edit
+  Edit,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/lib/stores/authStore';
 
 export default function EditCoursePage() {
   const params = useParams();
   const router = useRouter();
   const courseId = params.id as string;
+  
+  // State for data
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  // UI State
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'content' | 'settings' | 'theme'>('content');
   const [editingLesson, setEditingLesson] = useState<{ moduleId: string, lessonId: string } | null>(null);
   
-  const { courses, initialize, updateCourse, updateCourseTheme, addModule, updateModule, deleteModule, addLesson, updateLesson, deleteLesson } = useCourseStore();
-  
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
+  const supabase = createClient();
+  const { currentUser } = useAuthStore();
 
-  const course = courses.find(c => c.id === courseId);
+  // Fetch Course Data
+  useEffect(() => {
+    async function fetchCourseData() {
+      try {
+        setLoading(true);
+        
+        // 1. Fetch Course
+        const { data: courseData, error: courseError } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('id', courseId)
+          .single();
+
+        if (courseError) throw courseError;
+
+        // 2. Fetch Modules
+        const { data: modulesData, error: modulesError } = await supabase
+          .from('modules')
+          .select('*')
+          .eq('course_id', courseId)
+          .order('order', { ascending: true });
+
+        if (modulesError) throw modulesError;
+
+        // 3. Fetch Lessons
+        const { data: lessonsData, error: lessonsError } = await supabase
+          .from('lessons')
+          .select('*')
+          // We need to filter lessons by the modules we just fetched
+          // But Supabase allows filtering by joined table, or we can fetch all for these modules
+          // For simplicity, let's fetch all lessons that belong to these modules
+          // A better way is to join in the query, but let's stick to simple separate queries for now or map client-side
+          .in('module_id', modulesData.map(m => m.id))
+          .order('order', { ascending: true });
+
+        if (lessonsError) throw lessonsError;
+
+        // 4. Assemble the Course object
+        const fullModules: Module[] = modulesData.map(m => ({
+          id: m.id,
+          title: m.title,
+          description: '', // Add if needed in DB
+          order: m.order,
+          lessons: lessonsData
+            .filter(l => l.module_id === m.id)
+            .map(l => ({
+              id: l.id,
+              title: l.title,
+              description: l.content || '', // Mapping content to description for list view
+              type: l.video_url ? 'video' : 'text',
+              content: l.content,
+              videoUrl: l.video_url,
+              order: l.order,
+              duration: 0
+            }))
+        }));
+
+        const fullCourse: Course = {
+          id: courseData.id,
+          title: courseData.title,
+          description: courseData.description || '',
+          shortDescription: courseData.description || '',
+          authorId: courseData.author_id,
+          authorName: currentUser?.name || 'Me', // Fallback
+          thumbnail: courseData.cover_url,
+          price: courseData.price,
+          category: 'Development', // Placeholder, add to DB if needed
+          modules: fullModules,
+          createdAt: courseData.created_at,
+          updatedAt: courseData.updated_at,
+          studentsCount: 0,
+          rating: 0,
+          tags: [],
+          status: courseData.is_published ? 'published' : 'draft',
+          settings: { // Defaults
+            hasDeadlines: false,
+            autoAdvance: false,
+            allowLateSubmissions: false,
+            requireSequentialProgress: false,
+            certificateEnabled: false,
+            discussionEnabled: false
+          }
+        };
+
+        setCourse(fullCourse);
+      } catch (error) {
+        console.error('Error fetching course:', error);
+        // router.push('/author/courses'); // Redirect on error?
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (courseId) {
+      fetchCourseData();
+    }
+  }, [courseId, currentUser, supabase, router]);
+
+  // Handlers for Updates
+  const handleUpdateCourse = async (updates: Partial<Course>) => {
+    if (!course) return;
+    
+    // Optimistic update
+    setCourse({ ...course, ...updates });
+    
+    try {
+      // Map back to DB columns
+      const dbUpdates: any = {};
+      if (updates.title !== undefined) dbUpdates.title = updates.title;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.price !== undefined) dbUpdates.price = updates.price;
+      if (updates.status !== undefined) dbUpdates.is_published = updates.status === 'published';
+      // Add category, etc. if added to DB
+      
+      if (Object.keys(dbUpdates).length > 0) {
+        const { error } = await supabase
+          .from('courses')
+          .update(dbUpdates)
+          .eq('id', courseId);
+          
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error('Error updating course:', error);
+      alert('Ошибка при сохранении');
+    }
+  };
+
+  const handleAddModule = async () => {
+    if (!course) return;
+    
+    try {
+      setSaving(true);
+      const newOrder = course.modules.length + 1;
+      const { data, error } = await supabase
+        .from('modules')
+        .insert({
+          course_id: courseId,
+          title: 'Новый модуль',
+          order: newOrder
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newModule: Module = {
+        id: data.id,
+        title: data.title,
+        description: '',
+        lessons: [],
+        order: data.order
+      };
+
+      setCourse({
+        ...course,
+        modules: [...course.modules, newModule]
+      });
+      setActiveModuleId(newModule.id);
+    } catch (error) {
+      console.error('Error adding module:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
   
+  const handleUpdateModule = async (moduleId: string, title: string) => {
+    if (!course) return;
+    
+    // Optimistic
+    const updatedModules = course.modules.map(m => 
+      m.id === moduleId ? { ...m, title } : m
+    );
+    setCourse({ ...course, modules: updatedModules });
+
+    try {
+      await supabase
+        .from('modules')
+        .update({ title })
+        .eq('id', moduleId);
+    } catch (error) {
+      console.error('Error updating module:', error);
+    }
+  };
+
+  const handleDeleteModule = async (moduleId: string) => {
+    if (!confirm('Вы уверены? Все уроки в модуле будут удалены.')) return;
+    
+    try {
+      // Optimistic
+      if (course) {
+        setCourse({
+          ...course,
+          modules: course.modules.filter(m => m.id !== moduleId)
+        });
+      }
+
+      const { error } = await supabase
+        .from('modules')
+        .delete()
+        .eq('id', moduleId);
+        
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting module:', error);
+      alert('Ошибка при удалении');
+    }
+  };
+
+  const handleAddLesson = async (moduleId: string) => {
+    if (!course) return;
+    
+    try {
+      setSaving(true);
+      const module = course.modules.find(m => m.id === moduleId);
+      const newOrder = (module?.lessons.length || 0) + 1;
+      
+      const { data, error } = await supabase
+        .from('lessons')
+        .insert({
+          module_id: moduleId,
+          title: 'Новый урок',
+          order: newOrder,
+          content: '',
+          is_free: false
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newLesson: Lesson = {
+        id: data.id,
+        title: data.title,
+        description: '',
+        type: 'text',
+        content: '',
+        order: data.order,
+        duration: 0
+      };
+
+      const updatedModules = course.modules.map(m => {
+        if (m.id === moduleId) {
+          return { ...m, lessons: [...m.lessons, newLesson] };
+        }
+        return m;
+      });
+
+      setCourse({ ...course, modules: updatedModules });
+      setEditingLesson({ moduleId, lessonId: newLesson.id });
+    } catch (error) {
+      console.error('Error adding lesson:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  const handleUpdateLesson = async (moduleId: string, lessonId: string, updates: Partial<Lesson>) => {
+    if (!course) return;
+
+    // Optimistic
+    const updatedModules = course.modules.map(m => {
+      if (m.id === moduleId) {
+        return {
+          ...m,
+          lessons: m.lessons.map(l => l.id === lessonId ? { ...l, ...updates } : l)
+        };
+      }
+      return m;
+    });
+    setCourse({ ...course, modules: updatedModules });
+
+    try {
+      // Map to DB
+      const dbUpdates: any = {};
+      if (updates.title !== undefined) dbUpdates.title = updates.title;
+      if (updates.content !== undefined) dbUpdates.content = updates.content;
+      if (updates.videoUrl !== undefined) dbUpdates.video_url = updates.videoUrl;
+      
+      if (Object.keys(dbUpdates).length > 0) {
+        await supabase
+          .from('lessons')
+          .update(dbUpdates)
+          .eq('id', lessonId);
+      }
+    } catch (error) {
+      console.error('Error updating lesson:', error);
+    }
+  };
+
+  const handleDeleteLesson = async (moduleId: string, lessonId: string) => {
+     if (!confirm('Удалить этот урок?')) return;
+     
+     try {
+       if (course) {
+         const updatedModules = course.modules.map(m => {
+           if (m.id === moduleId) {
+             return { ...m, lessons: m.lessons.filter(l => l.id !== lessonId) };
+           }
+           return m;
+         });
+         setCourse({ ...course, modules: updatedModules });
+       }
+
+       await supabase
+         .from('lessons')
+         .delete()
+         .eq('id', lessonId);
+     } catch (error) {
+       console.error('Error deleting lesson:', error);
+     }
+  };
+
+  const togglePublish = () => {
+    if (!course) return;
+    const newStatus = course.status === 'published' ? 'draft' : 'published';
+    handleUpdateCourse({ status: newStatus });
+  };
+  
+  const togglePreview = () => {
+    window.open(`/buyer/courses/${courseId}`, '_blank');
+  };
+
+  if (loading) {
+    return (
+      <PageShell>
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+        </div>
+      </PageShell>
+    );
+  }
+
   if (!course) {
     return (
       <PageShell>
-        <div className="text-center py-20">
+         <div className="text-center py-20">
           <h1 className="text-2xl font-bold text-slate-900">Курс не найден</h1>
           <Button className="mt-4" onClick={() => router.push('/author/courses')}>Вернуться к списку</Button>
         </div>
       </PageShell>
     );
   }
-  
-  const handleUpdateCourse = (updates: Partial<Course>) => {
-    updateCourse(courseId, updates);
-  };
-
-  const handleUpdateTheme = (theme: CourseTheme) => {
-    updateCourseTheme(courseId, theme);
-  };
-
-  const handleAddModule = () => {
-    const newModule: Module = {
-      id: `m${Date.now()}`,
-      title: 'Новый модуль',
-      description: '',
-      lessons: [],
-      order: course.modules.length + 1
-    };
-    addModule(courseId, newModule);
-    setActiveModuleId(newModule.id);
-  };
-
-  const handleAddLesson = (moduleId: string) => {
-    const newLesson: Lesson = {
-      id: `l${Date.now()}`,
-      title: 'Новый урок',
-      description: '',
-      type: 'video',
-      content: '',
-      order: 1, // Logic to find max order needed
-      duration: 0
-    };
-    addLesson(courseId, moduleId, newLesson);
-    // Automatically open editor for new lesson
-    setEditingLesson({ moduleId, lessonId: newLesson.id });
-  };
-
-  const togglePreview = () => {
-    window.open(`/buyer/courses/${courseId}`, '_blank');
-  };
-  
-  const togglePublish = () => {
-    handleUpdateCourse({ status: course.status === 'published' ? 'draft' : 'published' });
-  };
 
   const activeLessonData = editingLesson 
     ? course.modules.find(m => m.id === editingLesson.moduleId)?.lessons.find(l => l.id === editingLesson.lessonId)
@@ -104,7 +398,7 @@ export default function EditCoursePage() {
   
   return (
     <PageShell className="relative">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             Редактор курса
@@ -125,12 +419,12 @@ export default function EditCoursePage() {
             className="flex items-center"
           >
             <Eye className="w-4 h-4 mr-2" />
-            Предпросмотр
+            <span className="hidden sm:inline">Предпросмотр</span>
           </Button>
           <Button 
             onClick={togglePublish}
             className={cn(
-              "flex items-center border-none shadow-lg",
+              "flex items-center border-none shadow-lg transition-colors",
               course.status === 'published' 
                 ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20" 
                 : "bg-primary-600 hover:bg-primary-700 text-white shadow-primary-500/20"
@@ -142,11 +436,11 @@ export default function EditCoursePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl w-fit mb-8">
+      <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl w-fit mb-8 overflow-x-auto">
         <button
           onClick={() => setActiveTab('content')}
           className={cn(
-            "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center",
+            "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center whitespace-nowrap",
             activeTab === 'content' ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
           )}
         >
@@ -156,7 +450,7 @@ export default function EditCoursePage() {
         <button
           onClick={() => setActiveTab('theme')}
           className={cn(
-            "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center",
+            "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center whitespace-nowrap",
             activeTab === 'theme' ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
           )}
         >
@@ -166,7 +460,7 @@ export default function EditCoursePage() {
         <button
           onClick={() => setActiveTab('settings')}
           className={cn(
-            "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center",
+            "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center whitespace-nowrap",
             activeTab === 'settings' ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
           )}
         >
@@ -182,21 +476,22 @@ export default function EditCoursePage() {
             <Card className="min-h-[600px]">
               <CardHeader className="flex flex-row items-center justify-between pb-2 border-b-0">
                 <CardTitle className="text-xl">Структура курса</CardTitle>
-                <Button size="sm" variant="ghost" onClick={handleAddModule} className="text-primary-600 hover:bg-primary-50">
-                  <Plus className="w-4 h-4 mr-1" /> Добавить модуль
+                <Button size="sm" variant="ghost" onClick={handleAddModule} disabled={saving} className="text-primary-600 hover:bg-primary-50">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-1" />} 
+                  Добавить модуль
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 {course.modules.length === 0 && (
                   <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-xl">
                     <p className="text-slate-400">В курсе пока нет модулей</p>
-                    <Button variant="ghost" onClick={handleAddModule} className="mt-2 text-primary-600">
+                    <Button variant="ghost" onClick={handleAddModule} disabled={saving} className="mt-2 text-primary-600">
                       Создать первый модуль
                     </Button>
                   </div>
                 )}
 
-                {course.modules.map((module, mIndex) => (
+                {course.modules.map((module) => (
                   <div key={module.id} className="group/module">
                     {/* Module Header */}
                     <div className="flex items-center py-2 px-2 hover:bg-slate-50 rounded-lg transition-colors group/header">
@@ -213,7 +508,7 @@ export default function EditCoursePage() {
                         <input 
                           type="text" 
                           value={module.title}
-                          onChange={(e) => updateModule(courseId, module.id, { title: e.target.value })}
+                          onChange={(e) => handleUpdateModule(module.id, e.target.value)}
                           className="w-full bg-transparent border-none p-0 font-semibold text-slate-900 focus:ring-0 placeholder:text-slate-300"
                           placeholder="Название модуля"
                         />
@@ -222,7 +517,7 @@ export default function EditCoursePage() {
                         <Button size="sm" variant="ghost" onClick={() => handleAddLesson(module.id)} title="Добавить урок">
                           <Plus className="w-4 h-4 text-slate-400" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => deleteModule(courseId, module.id)} title="Удалить модуль">
+                        <Button size="sm" variant="ghost" onClick={() => handleDeleteModule(module.id)} title="Удалить модуль">
                           <Trash className="w-4 h-4 text-slate-400 hover:text-rose-500" />
                         </Button>
                       </div>
@@ -231,7 +526,7 @@ export default function EditCoursePage() {
                     {/* Lessons List */}
                     {activeModuleId === module.id && (
                       <div className="ml-10 mt-1 space-y-1 border-l border-slate-100 pl-4 py-2">
-                        {module.lessons.map((lesson, lIndex) => (
+                        {module.lessons.map((lesson) => (
                           <div 
                             key={lesson.id} 
                             className={cn(
@@ -244,9 +539,9 @@ export default function EditCoursePage() {
                               <GripVertical className="w-3 h-3" />
                             </div>
                             <div className="mr-3 text-slate-400">
-                              {lesson.type === 'video' ? <Video className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
+                              {lesson.type === 'video' || lesson.videoUrl ? <Video className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
                             </div>
-                            <div className="flex-1 text-sm text-slate-700 font-medium">
+                            <div className="flex-1 text-sm text-slate-700 font-medium truncate">
                               {lesson.title}
                             </div>
                             <div className="flex items-center opacity-0 group-hover/lesson:opacity-100">
@@ -263,7 +558,7 @@ export default function EditCoursePage() {
                                 variant="ghost" 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  deleteLesson(courseId, module.id, lesson.id);
+                                  handleDeleteLesson(module.id, lesson.id);
                                 }}
                                 className="h-6 w-6 p-0 text-slate-400 hover:text-rose-500"
                                 title="Удалить"
@@ -290,7 +585,10 @@ export default function EditCoursePage() {
           )}
 
           {activeTab === 'theme' && (
-            <ThemeEditor course={course} onUpdate={handleUpdateTheme} />
+            <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <Palette className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>Редактор тем временно недоступен</p>
+            </div>
           )}
 
           {activeTab === 'settings' && (
@@ -388,8 +686,7 @@ export default function EditCoursePage() {
           <LessonEditor 
             lesson={activeLessonData} 
             onUpdate={(updates) => {
-              updateLesson(courseId, editingLesson.moduleId, editingLesson.lessonId, updates);
-              // Don't close automatically, let user keep editing or close manually
+              handleUpdateLesson(editingLesson.moduleId, editingLesson.lessonId, updates);
             }}
             onClose={() => setEditingLesson(null)}
           />
