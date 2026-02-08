@@ -3,40 +3,63 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CourseCard } from '@/components/course/CourseCard';
-import { useStudentStore, useCourseStore } from '@/lib/stores';
+import { useStudentStore } from '@/lib/stores';
 import { strings } from '@/lib/strings.ru';
 import { PageShell } from '@/components/layout/PageShell';
-import { Search, Filter, SlidersHorizontal, X } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
+import { Search, Filter, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { createClient } from '@/lib/supabase/client';
+import { Course } from '@/lib/types';
 
 export default function BuyerCatalog() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const initialSearch = searchParams.get('search') || '';
   
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const { purchaseCourse } = useStudentStore();
-  const { courses, initialize } = useCourseStore();
 
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    async function fetchPublishedCourses() {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('is_published', true) // Only published courses
+        .order('created_at', { ascending: false });
 
-  // Sync state with URL params
-  useEffect(() => {
-    const query = searchParams.get('search') || '';
-    if (query !== searchQuery) {
-      setSearchQuery(query);
+      if (!error && data) {
+        // Map data
+        const mappedCourses: Course[] = data.map(c => ({
+          id: c.id,
+          title: c.title,
+          description: c.description || '',
+          authorId: c.author_id,
+          authorName: 'Author', // Placeholder until we join profiles
+          price: c.price,
+          coverUrl: c.cover_url,
+          modules: [],
+          category: 'General',
+          level: 'All',
+          rating: 5,
+          studentsCount: 0,
+          lastUpdated: c.updated_at,
+          isPublished: c.is_published
+        }));
+        setCourses(mappedCourses);
+      }
+      setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
 
-  // Update URL when search changes (debounced ideally, but simple push for now on enter or button click)
+    fetchPublishedCourses();
+  }, []);
+
+  // Update URL when search changes
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    // Optional: update URL in real-time or just let local state handle it until navigation
   };
   
   const categories = Array.from(new Set(courses.map(course => course.category)));
@@ -51,7 +74,6 @@ export default function BuyerCatalog() {
   
   const handleBuyCourse = (courseId: string) => {
     purchaseCourse(courseId);
-    // В реальном приложении здесь был бы процесс оплаты
     alert('Курс успешно добавлен в ваше обучение!');
   };
   
@@ -102,7 +124,11 @@ export default function BuyerCatalog() {
       
       {/* Results */}
       <div>
-        {filteredCourses.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+          </div>
+        ) : filteredCourses.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Search className="w-10 h-10 text-slate-300" />

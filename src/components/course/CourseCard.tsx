@@ -5,10 +5,11 @@ import { formatPrice } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { strings } from '@/lib/strings.ru';
-import { User, Star, Clock, BookOpen, Bookmark, BookmarkCheck } from 'lucide-react';
+import { User, Star, BookOpen, Bookmark, BookmarkCheck } from 'lucide-react';
 import { useStudentStore } from '@/lib/stores/studentStore';
 import { EnrollButton } from '@/components/course/EnrollButton';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/Badge';
 
 interface CourseCardProps {
   course: Course;
@@ -31,7 +32,7 @@ export function CourseCard({
 }: CourseCardProps) {
   const { isCourseSaved, toggleSaveCourse } = useStudentStore();
   const isSaved = isCourseSaved(course.id);
-  const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
+  const totalLessons = course.modules?.reduce((acc, module) => acc + module.lessons.length, 0) || 0;
   
   const handleSave = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,7 +60,7 @@ export function CourseCard({
       {/* Image Container */}
       <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
         <Image
-          src={course.thumbnail}
+          src={course.thumbnail || course.coverUrl || '/placeholder-course.jpg'}
           alt={course.title}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -68,18 +69,29 @@ export function CourseCard({
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
         
-        {/* Price Badge */}
-        <div className="absolute top-3 right-3">
-          {course.price === 0 ? (
-            <div className="bg-emerald-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-              {strings.free}
-            </div>
-          ) : (
-            <div className="bg-white/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-white/50">
-              {formatPrice(course.price)}
-            </div>
-          )}
-        </div>
+        {/* Status Badge for Authors */}
+        {userRole === 'author' && (
+          <div className="absolute top-3 right-3 z-20">
+            <Badge variant={course.isPublished ? 'success' : 'secondary'} className="shadow-lg">
+              {course.isPublished ? 'Опубликован' : 'Черновик'}
+            </Badge>
+          </div>
+        )}
+
+        {/* Price Badge (Only for buyers or if published) */}
+        {userRole !== 'author' && (
+          <div className="absolute top-3 right-3">
+            {course.price === 0 ? (
+              <div className="bg-emerald-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                {strings.free}
+              </div>
+            ) : (
+              <div className="bg-white/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-white/50">
+                {formatPrice(course.price)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
       {/* Content */}
@@ -102,7 +114,7 @@ export function CourseCard({
         
         {/* Description */}
         <p className="text-sm text-slate-500 mb-4 line-clamp-2 leading-relaxed">
-          {course.shortDescription}
+          {course.shortDescription || course.description}
         </p>
         
         {/* Meta Info */}
@@ -149,7 +161,7 @@ export function CourseCard({
                   variant="outline"
                   className="w-full hover:bg-slate-50"
                 >
-                  Открыть
+                  Просмотр
                 </Button>
               </Link>
               <Link 
@@ -173,7 +185,7 @@ export function CourseCard({
               <Button 
                 className="w-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 border-none"
               >
-                View Details
+                Подробнее
               </Button>
             </Link>
           )}
