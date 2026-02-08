@@ -4,8 +4,17 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'author' | 'buyer';
+  role: 'author' | 'buyer' | 'admin';
   avatar?: string;
+  lastSeenAt?: string;
+}
+
+export interface AnalyticsEvent {
+  id: string;
+  eventName: string;
+  path: string;
+  createdAt: string;
+  metadata?: Record<string, any>;
 }
 
 export interface AuthorProfile {

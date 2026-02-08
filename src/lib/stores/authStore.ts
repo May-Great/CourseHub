@@ -4,18 +4,17 @@ import { User } from '../types';
 
 interface AuthState {
   currentUser: User | null;
-  userRole: 'author' | 'buyer' | null;
+  userRole: 'author' | 'buyer' | 'admin' | null;
   loading: boolean;
   initialized: boolean;
   
   // Actions
   initialize: () => Promise<void>;
-  // Updated signIn to support password
   signIn: (email: string, password?: string) => Promise<{ error: Error | null }>;
   signInWithOAuth: (provider: 'google' | 'yandex') => Promise<{ data?: unknown; error: Error | null }>;
-  signUp: (email: string, password: string, role: 'author' | 'buyer', name: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, role: 'author' | 'buyer', name: string) => Promise<{ error: Error | null; emailConfirmationRequired?: boolean }>;
   signOut: () => Promise<void>;
-  setUserRole: (role: 'author' | 'buyer') => void; 
+  setUserRole: (role: 'author' | 'buyer' | 'admin') => void; 
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -48,7 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
-      const role = user.user_metadata.role as 'author' | 'buyer' || 'buyer';
+      const role = (user.user_metadata.role || 'buyer') as 'author' | 'buyer' | 'admin';
       set({
         currentUser: {
           id: user.id,
@@ -189,23 +188,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       },
     });
 
-    if (data.user) {
-       // Note: If email confirmation is enabled, user won't be signed in immediately
-       // We can handle this by checking data.session
-       if (data.session) {
-         set({
-            currentUser: {
-              id: data.user.id,
-              email: data.user.email!,
-              name: name,
-              role: role,
-            },
-            userRole: role,
-         });
-       }
+    if (error) return { error };
+
+    // If successful, check if session exists. 
+    // If NO session, it means email confirmation is required.
+    if (data.user && !data.session) {
+       return { error: null, emailConfirmationRequired: true };
     }
 
-    return { error };
+    if (data.user && data.session) {
+       set({
+          currentUser: {
+            id: data.user.id,
+            email: data.user.email!,
+            name: name,
+            role: role,
+          },
+          userRole: role,
+       });
+    }
+
+    return { error: null };
   },
 
   signOut: async () => {

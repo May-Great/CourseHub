@@ -6,7 +6,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
-import { Loader2, Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, Lock, User, ArrowLeft, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 function LoginForm() {
@@ -19,10 +19,12 @@ function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [role, setRole] = useState<'author' | 'buyer'>(initialRole || 'buyer');
   
-  const [email, setEmail] = useState(''); // Can be username for mock
+  const [email, setEmail] = useState(''); 
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,13 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
-    if (!isLogin && !name) return;
+    if (!isLogin) {
+      if (!name) return;
+      if (!agreed) {
+        setError('Необходимо принять пользовательское соглашение');
+        return;
+      }
+    }
 
     setLoading(true);
     setError(null);
@@ -47,11 +55,16 @@ function LoginForm() {
       setError(result.error.message);
       setLoading(false);
     } else {
-      // Success redirect
       setLoading(false);
-      // Determine redirect path based on resulting role (mock logic might return different role)
-      const targetRole = isLogin && (email === 'adminIMN1' ? 'author' : email === 'adminIMN2' ? 'buyer' : role) || role;
       
+      // Handle Email Confirmation Flow
+      if (!isLogin && (result as any).emailConfirmationRequired) {
+        setEmailSent(true);
+        return;
+      }
+
+      // Standard Login Redirect
+      const targetRole = isLogin && (email === 'adminIMN1' ? 'author' : email === 'adminIMN2' ? 'buyer' : role) || role;
       router.push(targetRole === 'author' ? '/author/me' : '/buyer/catalog');
     }
   };
@@ -63,8 +76,36 @@ function LoginForm() {
       setError(error.message);
       setLoading(false);
     }
-    // If successful, Supabase redirects automatically
   };
+
+  // Success Screen after Registration
+  if (emailSent) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 shadow-xl border-slate-200 text-center animate-in fade-in zoom-in-95">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Проверьте почту</h2>
+          <p className="text-slate-600 mb-6">
+            Мы отправили письмо с подтверждением на <strong>{email}</strong>. 
+            Перейдите по ссылке в письме, чтобы активировать аккаунт.
+          </p>
+          <Button 
+            onClick={() => {
+              setEmailSent(false);
+              setIsLogin(true);
+            }}
+            className="w-full"
+          >
+            Вернуться ко входу
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -86,7 +127,6 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* Role Selection (Only for Register or if not pre-selected) */}
           {!isLogin && (
              <div className="flex bg-slate-100 p-1 rounded-lg mb-4">
                <button
@@ -128,7 +168,7 @@ function LoginForm() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email или Логин</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
             <div className="relative">
               <Mail className="w-5 h-5 absolute left-3 top-2.5 text-slate-400" />
               <Input
@@ -163,6 +203,21 @@ function LoginForm() {
               </button>
             </div>
           </div>
+
+          {!isLogin && (
+            <div className="flex items-start gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-1 w-4 h-4 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
+              />
+              <label htmlFor="terms" className="text-sm text-slate-600 leading-tight">
+                Я принимаю <Link href="#" className="text-primary-600 hover:underline">пользовательское соглашение</Link> и даю согласие на обработку персональных данных
+              </label>
+            </div>
+          )}
 
           {error && (
             <div className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100 animate-shake">
@@ -224,6 +279,7 @@ function LoginForm() {
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError(null);
+                setAgreed(false);
               }}
               className="text-sm text-primary-600 hover:text-primary-700 font-medium hover:underline"
             >
