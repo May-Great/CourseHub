@@ -29,6 +29,7 @@ export default function BuyerCourses() {
       const { data, error } = await supabase
         .from('enrollments')
         .select(`
+          progress,
           course:courses (
             id, title, description, price, cover_url, author_id, updated_at
           )
@@ -54,6 +55,7 @@ export default function BuyerCourses() {
           rating: 5,
           tags: [],
           status: 'published',
+          progress: item.progress || 0, // Add progress from enrollment
           settings: {
             hasDeadlines: false,
             autoAdvance: false,
@@ -143,7 +145,7 @@ export default function BuyerCourses() {
                   key={course.id}
                   course={course}
                   showProgress={true}
-                  progress={0} // TODO: Connect real progress
+                  progress={course.progress} // Use real progress
                   showBuyButton={false}
                 />
               ))}

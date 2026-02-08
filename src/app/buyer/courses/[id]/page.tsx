@@ -28,12 +28,12 @@ export default function CourseLearnPage() {
   const courseId = params.id as string;
   
   const { courses } = useCourseStore();
-  const { userProgress, completeLesson, getUserProgress } = useProgressStore();
+  // const { userProgress, completeLesson, getUserProgress } = useProgressStore(); // Deprecated
   const { currentUser: user } = useAuthStore();
-  const { purchasedCourses } = useStudentStore();
+  const { purchasedCourses, fetchProgress, isLessonCompleted, markLessonCompleted, completedLessons } = useStudentStore();
   
   const course = courses.find(c => c.id === courseId);
-  const userCourseProgress = user ? getUserProgress(user.id, courseId) : undefined;
+  // const userCourseProgress = user ? getUserProgress(user.id, courseId) : undefined;
   
   const isPurchased = course && purchasedCourses.includes(course.id);
   const isLocked = course && course.price > 0 && !isPurchased;
@@ -41,6 +41,13 @@ export default function CourseLearnPage() {
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'discussion' | 'chat' | 'reviews' | 'certificate'>('overview');
+
+  // Fetch progress on mount
+  useEffect(() => {
+    if (courseId) {
+      fetchProgress(courseId);
+    }
+  }, [courseId, fetchProgress]);
 
   // Initialize active lesson based on progress or first lesson
   useEffect(() => {
@@ -60,17 +67,17 @@ export default function CourseLearnPage() {
 
   const handleLessonComplete = () => {
     if (user && activeLesson) {
-      completeLesson(user.id, courseId, activeLesson.id);
+      // Toggle completion
+      const isCompleted = isLessonCompleted(activeLesson.id);
+      markLessonCompleted(activeLesson.id, !isCompleted);
     }
-  };
-
-  const isLessonCompleted = (lessonId: string) => {
-    return userCourseProgress?.completedLessons.includes(lessonId) || false;
   };
 
   // Helper to get total lessons count
   const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
-  const completedCount = userCourseProgress?.completedLessons.length || 0;
+  // Calculate completed count for THIS course only
+  const courseLessonIds = course.modules.flatMap(m => m.lessons.map(l => l.id));
+  const completedCount = completedLessons.filter(id => courseLessonIds.includes(id)).length;
   const progressPercentage = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
   // Apply theme styles
@@ -226,10 +233,21 @@ export default function CourseLearnPage() {
                         <p className="text-sm opacity-70 mt-2">Контент: {activeLesson.content}</p>
                         <button 
                           onClick={handleLessonComplete}
-                          className={cn("mt-6 px-6 py-2 text-white transition-colors", buttonRadiusClass)}
-                          style={{ backgroundColor: theme?.primaryColor || '#4f46e5' }}
+                          className={cn(
+                            "mt-6 px-6 py-2 text-white transition-colors flex items-center mx-auto", 
+                            buttonRadiusClass,
+                            isLessonCompleted(activeLesson.id) ? "bg-emerald-600 hover:bg-emerald-700" : ""
+                          )}
+                          style={!isLessonCompleted(activeLesson.id) ? { backgroundColor: theme?.primaryColor || '#4f46e5' } : {}}
                         >
-                          Отметить как пройденный
+                          {isLessonCompleted(activeLesson.id) ? (
+                            <>
+                              <CheckCircle className="w-5 h-5 mr-2" />
+                              Урок пройден
+                            </>
+                          ) : (
+                            "Отметить как пройденный"
+                          )}
                         </button>
                       </div>
                     </div>
