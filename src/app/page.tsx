@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { LavaBackground } from '@/components/layout/LavaBackground';
 import { FeaturedCourses } from '@/components/home/FeaturedCourses';
+import { Logo } from '@/components/ui/Logo';
 import { 
   ArrowRight, 
   Sparkles, 
   BookOpen, 
   Users, 
   Zap,
-  CheckCircle
+  CheckCircle,
+  Star
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -25,12 +27,9 @@ export default function Home() {
 
       {/* Navbar (Transparent) */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
-        <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 shadow-lg">
-            <Sparkles className="w-6 h-6 text-indigo-600" />
-          </div>
-          <span className="text-xl font-bold text-slate-900 tracking-tight">CourseHub</span>
-        </div>
+        <Link href="/">
+          <Logo />
+        </Link>
         <div className="flex items-center gap-4">
           {currentUser ? (
             <Link href="/buyer/dashboard">
@@ -63,22 +62,22 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center space-x-2 bg-white/30 backdrop-blur-md border border-white/40 rounded-full px-4 py-1.5 mb-8 shadow-sm">
-              <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
-              <span className="text-sm font-medium text-indigo-900">
-                На платформе 2.0 уже доступны ИИ инструменты
+            <div className="inline-flex items-center space-x-2 bg-blue-50/80 backdrop-blur-md border border-blue-100 rounded-full px-4 py-1.5 mb-8 shadow-sm">
+              <Star className="w-4 h-4 text-amber-400 fill-amber-400 animate-pulse" />
+              <span className="text-sm font-medium text-blue-900">
+                На платформе 2.0 уже доступны AI-инструменты
               </span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight">
               Учите и учитесь <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
                 без границ
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-slate-600 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Создавайте курсы с помощью ИИ, находите студентов и развивайте навыки в удобном темпе. Доступ навсегда.
+              Создавайте курсы с помощью AI, находите студентов и развивайте навыки в удобном темпе. Доступ навсегда.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -171,16 +170,16 @@ export default function Home() {
             </div>
 
             {/* AI Feature */}
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-8 rounded-3xl text-white shadow-xl transform md:scale-105">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl text-white shadow-xl transform md:scale-105">
               <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-3">ИИ Помощник</h3>
-              <p className="text-indigo-100 mb-6 leading-relaxed">
+              <h3 className="text-xl font-bold mb-3">AI Помощник</h3>
+              <p className="text-blue-100 mb-6 leading-relaxed">
                 Используйте мощь искусственного интеллекта для создания структуры курса, генерации тестов и улучшения контента.
               </p>
               <Link href={currentUser ? "/author/courses" : "/auth?mode=signup"}>
-                <Button className="w-full bg-white text-indigo-700 hover:bg-indigo-50 border-none">
+                <Button className="w-full bg-white text-blue-700 hover:bg-blue-50 border-none">
                   Попробовать бесплатно
                 </Button>
               </Link>
@@ -196,10 +195,10 @@ export default function Home() {
             Готовы начать?
           </h2>
           <p className="text-xl text-slate-600 mb-10">
-            Создай свой курс через ИИ сегодня или начни путь к новой профессии.
+            Создай свой курс через AI сегодня или начни путь к новой профессии.
           </p>
           <Link href={currentUser ? "/buyer/catalog" : "/auth?mode=signup"}>
-            <Button size="lg" className="h-14 px-10 text-lg bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow-xl shadow-indigo-500/30">
+            <Button size="lg" className="h-14 px-10 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-xl shadow-blue-500/30">
               Присоединиться к CourseHub
             </Button>
           </Link>

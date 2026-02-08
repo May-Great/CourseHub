@@ -25,28 +25,28 @@ export function LavaBackground() {
   const smoothY2 = useSpring(y2, { stiffness: 100, damping: 30 });
   
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden bg-slate-50 pointer-events-none">
-      {/* Blob 1: Purple/Indigo */}
+    <div className="fixed inset-0 -z-10 overflow-hidden bg-white pointer-events-none">
+      {/* Blob 1: Sky Blue */}
       <motion.div
         style={{ y: smoothY1, rotate: rotate1 }}
         animate={{
           scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
+          opacity: [0.4, 0.6, 0.4],
         }}
         transition={{
           duration: 10,
           repeat: Infinity,
           ease: "easeInOut"
         }}
-        className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+        className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
       />
 
-      {/* Blob 2: Pink/Rose */}
+      {/* Blob 2: Blue */}
       <motion.div
         style={{ y: smoothY2, rotate: rotate2 }}
         animate={{
           scale: [1, 1.1, 1],
-          opacity: [0.3, 0.4, 0.3],
+          opacity: [0.4, 0.5, 0.4],
         }}
         transition={{
           duration: 8,
@@ -54,10 +54,10 @@ export function LavaBackground() {
           ease: "easeInOut",
           delay: 1
         }}
-        className="absolute top-[10%] -right-[10%] w-[60vw] h-[60vw] bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+        className="absolute top-[10%] -right-[10%] w-[60vw] h-[60vw] bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
       />
 
-      {/* Blob 3: Blue/Cyan (Bottom) */}
+      {/* Blob 3: Indigo (Bottom) */}
       <motion.div
         style={{ y: y3 }}
         animate={{
@@ -70,7 +70,7 @@ export function LavaBackground() {
           ease: "easeInOut",
           delay: 2
         }}
-        className="absolute -bottom-[20%] left-[20%] w-[80vw] h-[80vw] bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+        className="absolute -bottom-[20%] left-[20%] w-[80vw] h-[80vw] bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
       />
       
       {/* Noise Texture for "Lava" feel */}
