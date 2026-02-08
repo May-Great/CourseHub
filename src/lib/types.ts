@@ -169,6 +169,7 @@ export interface Course {
   rating: number;
   tags: string[];
   status: 'draft' | 'published' | 'archived';
+  progress?: number; // Added progress field
   templateId?: string; // Reference to course template
   settings: CourseSettings;
   theme?: CourseTheme; // Visual customization
