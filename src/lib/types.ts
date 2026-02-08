@@ -63,6 +63,7 @@ export interface Lesson {
   description: string;
   type: LessonType;
   content: string; // URL for video/audio/pdf, text content for text type
+  videoUrl?: string; // Optional direct video URL
   duration?: number; // in seconds
   materials?: Material[];
   assignment?: Assignment;
