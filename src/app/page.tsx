@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/lib/stores/authStore';
-import { LavaBackground } from '@/components/layout/LavaBackground';
 import { FeaturedCourses } from '@/components/home/FeaturedCourses';
 import { Logo } from '@/components/ui/Logo';
 import { 
@@ -21,9 +20,9 @@ export default function Home() {
   const { currentUser } = useAuthStore();
 
   return (
-    <main className="min-h-screen relative overflow-hidden">
-      {/* Animated Background */}
-      <LavaBackground />
+    <main className="min-h-screen relative overflow-hidden bg-slate-50">
+      {/* Static Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-blue-50 pointer-events-none" />
 
       {/* Navbar (Transparent) */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
