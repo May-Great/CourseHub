@@ -356,16 +356,6 @@ export default function CourseLearnPage() {
                          <CourseReviews courseId={course.id} progressPercentage={progressPercentage} />
                        </div>
                      )}
-                     
-                     {activeTab === 'certificate' && user && (
-                       <div className="flex justify-center py-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                         <Certificate 
-                           course={course} 
-                           user={user} 
-                           completionDate={new Date().toISOString()} 
-                         />
-                       </div>
-                     )}
                    </div>
                 </div>
               </div>

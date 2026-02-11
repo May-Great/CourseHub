@@ -55,7 +55,6 @@ export default function BuyerCatalog() {
             autoAdvance: false,
             allowLateSubmissions: false,
             requireSequentialProgress: false,
-            certificateEnabled: false,
             discussionEnabled: false
           }
         }));

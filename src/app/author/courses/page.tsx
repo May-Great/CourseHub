@@ -59,7 +59,6 @@ export default function AuthorCourses() {
             autoAdvance: false,
             allowLateSubmissions: false,
             requireSequentialProgress: false,
-            certificateEnabled: false,
             discussionEnabled: false
           }
         }));

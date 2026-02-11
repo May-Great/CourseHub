@@ -127,7 +127,6 @@ export default function EditCoursePage() {
             autoAdvance: false,
             allowLateSubmissions: false,
             requireSequentialProgress: false,
-            certificateEnabled: false,
             discussionEnabled: false
           }
         };

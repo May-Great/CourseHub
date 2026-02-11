@@ -180,31 +180,7 @@ export interface CourseSettings {
   autoAdvance: boolean;
   allowLateSubmissions: boolean;
   requireSequentialProgress: boolean;
-  certificateEnabled: boolean;
   discussionEnabled: boolean;
-}
-
-export interface CourseTemplate {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  duration: string; // "14 дней", "4 недели"
-  structure: {
-    modulesCount: number;
-    lessonsPerModule: number;
-    suggestedSchedule: string; // "2 урока в неделю"
-  };
-  defaultModules: {
-    title: string;
-    description: string;
-    suggestedLessons: string[];
-  }[];
-  cohortSettings: {
-    defaultDuration: number; // days
-    checkpointFrequency: 'daily' | 'weekly' | 'biweekly';
-    hasDeadlines: boolean;
-  };
 }
 
 export interface Cohort {

@@ -39,7 +39,7 @@ export function FeaturedCourses() {
           rating: c.rating || 5,
           tags: [],
           status: 'published',
-          settings: { hasDeadlines: false, autoAdvance: false, allowLateSubmissions: false, requireSequentialProgress: false, certificateEnabled: false, discussionEnabled: false }
+          settings: { hasDeadlines: false, autoAdvance: false, allowLateSubmissions: false, requireSequentialProgress: false, discussionEnabled: false }
         }));
         setCourses(mapped);
       }

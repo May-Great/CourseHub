@@ -102,7 +102,7 @@ function LoginForm() {
       features: [
         { icon: <BookOpen className="w-5 h-5 text-blue-600" />, text: "Учитесь в своем темпе" },
         { icon: <CheckCircle2 className="w-5 h-5 text-blue-600" />, text: "Доступ к материалам навсегда" },
-        { icon: <GraduationCap className="w-5 h-5 text-blue-600" />, text: "Сертификаты по окончании" }
+        { icon: <GraduationCap className="w-5 h-5 text-blue-600" />, text: "Практические задания" }
       ]
     };
   };

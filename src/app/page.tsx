@@ -141,7 +141,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start text-slate-600">
                   <CheckCircle className="w-5 h-5 text-blue-500 mr-2 flex-shrink-0" />
-                  Сертификаты после завершения
+                  Практические задания и проекты
                 </li>
               </ul>
             </div>

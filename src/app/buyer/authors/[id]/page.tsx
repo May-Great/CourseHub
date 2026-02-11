@@ -83,7 +83,7 @@ export default function BuyerAuthorProfile() {
           rating: c.rating || 0,
           tags: [],
           status: 'published',
-          settings: { hasDeadlines: false, autoAdvance: false, allowLateSubmissions: false, requireSequentialProgress: false, certificateEnabled: false, discussionEnabled: false }
+          settings: { hasDeadlines: false, autoAdvance: false, allowLateSubmissions: false, requireSequentialProgress: false, discussionEnabled: false }
         }));
         
         setCourses(mappedCourses);

@@ -313,11 +313,10 @@ export function generateCourseFromTemplate(
     templateId: template.id,
     settings: {
       hasDeadlines: true,
-      autoAdvance: false,
+      autoAdvance: true,
       allowLateSubmissions: true,
       requireSequentialProgress: false,
-      certificateEnabled: true,
-      discussionEnabled: true,
-    },
+      discussionEnabled: true
+    }
   };
 }

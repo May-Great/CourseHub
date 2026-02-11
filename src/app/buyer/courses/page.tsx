@@ -61,7 +61,6 @@ export default function BuyerCourses() {
             autoAdvance: false,
             allowLateSubmissions: false,
             requireSequentialProgress: false,
-            certificateEnabled: false,
             discussionEnabled: false
           }
         }));
