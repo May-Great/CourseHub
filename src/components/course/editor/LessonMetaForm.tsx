@@ -2,6 +2,7 @@ import { Lesson, LessonType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Video, FileText, HelpCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FileUpload } from '@/components/ui/FileUpload';
 
 interface LessonMetaFormProps {
   lesson: Lesson;
@@ -89,15 +90,19 @@ export function LessonMetaForm({ lesson, onChange }: LessonMetaFormProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Ссылка на видео (MP4)</label>
-              <input
-                type="text"
-                value={lesson.content}
-                onChange={(e) => onChange('content', e.target.value)}
-                placeholder="https://example.com/video.mp4"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-primary-500 transition-colors font-mono text-sm"
+              <label className="block text-sm font-medium text-slate-700 mb-2">Видео файл</label>
+              <FileUpload
+                bucket="course-content"
+                path={`lessons/${lesson.id}/`}
+                accept="video/*"
+                label="Загрузить видео урока"
+                currentUrl={lesson.videoUrl || (lesson.type === 'video' ? lesson.content : null)}
+                onUploadComplete={(url) => {
+                  onChange('videoUrl', url);
+                  // Also set content if empty to keep compatibility
+                  if (url) onChange('content', url); 
+                }}
               />
-              <p className="text-xs text-slate-400 mt-1">Поддерживаются прямые ссылки на .mp4 файлы</p>
             </div>
             
             <div>

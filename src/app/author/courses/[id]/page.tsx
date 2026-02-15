@@ -12,7 +12,6 @@ import { ThemeEditor } from '@/components/course/ThemeEditor';
 import { LessonEditor } from '@/components/course/LessonEditor';
 import { 
   Eye, 
-  Upload, 
   GripVertical, 
   Plus, 
   Trash, 
@@ -29,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores/authStore';
+import { FileUpload } from '@/components/ui/FileUpload';
 
 export default function EditCoursePage() {
   const params = useParams();
@@ -643,21 +643,14 @@ export default function EditCoursePage() {
               <CardTitle className="text-lg">Обложка</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="relative aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200 group cursor-pointer">
-                {course.thumbnail ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={course.thumbnail} alt="Thumbnail" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-slate-400">
-                    <span className="text-sm">Нет изображения</span>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" className="text-white border-white hover:bg-white/20">
-                    <Upload className="w-4 h-4 mr-2" /> Загрузить
-                  </Button>
-                </div>
-              </div>
+              <FileUpload
+                bucket="course-content"
+                path={`covers/${courseId}/`}
+                accept="image/*"
+                label="Загрузить обложку"
+                currentUrl={course.thumbnail}
+                onUploadComplete={(url) => handleUpdateCourse({ thumbnail: url })}
+              />
             </CardContent>
           </Card>
           
