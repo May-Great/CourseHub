@@ -16,7 +16,7 @@ export function FeaturedCourses() {
       // Fetch 3 published courses, ordered by rating or creation date
       const { data, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('*, author:profiles(full_name, avatar_url)')
         .eq('is_published', true)
         .order('rating', { ascending: false }) // Or created_at
         .limit(3);
@@ -28,7 +28,8 @@ export function FeaturedCourses() {
           description: c.description || '',
           shortDescription: c.description || '',
           authorId: c.author_id,
-          authorName: 'Автор курса', // We need to join profiles ideally, but for now placeholder
+          authorName: c.author?.full_name || 'Автор курса',
+          authorAvatar: c.author?.avatar_url,
           thumbnail: c.cover_url,
           price: c.price,
           category: 'Популярное',

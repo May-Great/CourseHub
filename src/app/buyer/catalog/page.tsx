@@ -27,7 +27,7 @@ export default function BuyerCatalog() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('*, author:profiles(full_name, avatar_url)')
         .eq('is_published', true) // Only published courses
         .order('created_at', { ascending: false });
 
@@ -39,7 +39,8 @@ export default function BuyerCatalog() {
           description: c.description || '',
           shortDescription: c.description || '',
           authorId: c.author_id,
-          authorName: 'Author',
+          authorName: c.author?.full_name || 'Автор курса',
+          authorAvatar: c.author?.avatar_url,
           thumbnail: c.cover_url,
           price: c.price,
           category: 'General',
