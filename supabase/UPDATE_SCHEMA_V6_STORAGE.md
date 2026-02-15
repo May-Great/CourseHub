@@ -12,6 +12,12 @@ on conflict (id) do nothing;
 
 -- Политики доступа (RLS) для Storage
 
+-- Удаляем старые политики, чтобы избежать ошибок при повторном запуске
+drop policy if exists "Public Access" on storage.objects;
+drop policy if exists "Authors can upload" on storage.objects;
+drop policy if exists "Authors can update own files" on storage.objects;
+drop policy if exists "Authors can delete own files" on storage.objects;
+
 -- 1. Чтение: Все могут читать (публичный контент)
 create policy "Public Access"
 on storage.objects for select
