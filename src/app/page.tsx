@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { FeaturedCourses } from '@/components/home/FeaturedCourses';
 import { Logo } from '@/components/ui/Logo';
+import { Footer } from '@/components/layout/Footer';
 import { 
   ArrowRight, 
   Sparkles, 
@@ -205,11 +206,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 py-12 border-t border-slate-200 bg-white/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 text-center text-slate-500 text-sm">
-          <p>© {new Date().getFullYear()} CourseHub. Все права защищены.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }
